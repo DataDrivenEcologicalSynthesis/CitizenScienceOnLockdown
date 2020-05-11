@@ -1,12 +1,11 @@
 # CitizenScienceOnLockdown
 
-Goal of the project: To de determined
+Goal of the project: To be determined
 
 
 Contributors: 
 
-Aliénor Stahl, @AlienorStahl
+- Aliénor Stahl, @Alienor Stahl
+- Mélanie Jean, @hsplendens
+- Timothy Law, @lawwt
 
-Mélanie Jean, @hsplendens
-
-Timothy Law, @lawwt
