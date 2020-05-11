@@ -1,9 +1,11 @@
 # CitizenScienceOnLockdown
 
-Goal of the project: To be determined
+## Goal of the project: 
+
+To be determined
 
 
-Contributors: 
+## Contributors: 
 
 - Aliénor Stahl, @Alienor Stahl
 - Mélanie Jean, @hsplendens
