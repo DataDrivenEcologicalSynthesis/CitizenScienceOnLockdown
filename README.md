@@ -4,7 +4,8 @@ Goal of the project: To de determined
 
 
 Contributors: 
-Aliénor Stahl
+
+Aliénor Stahl, @AlienorStahl
 
 Mélanie Jean, @hsplendens
 
