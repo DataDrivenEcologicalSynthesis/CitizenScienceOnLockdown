@@ -10,4 +10,4 @@ To be determined
 - Aliénor Stahl, @Alienor Stahl
 - Mélanie Jean, @hsplendens
 - Timothy Law, @lawwt
-- Shuang Xing, @Shuanggeek
+- Shuang Xing, @shuanggeek
