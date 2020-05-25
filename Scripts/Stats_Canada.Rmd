@@ -1,15 +1,3 @@
----
-title: "Stats can"
-author: "Mélanie Jean"
-date: "5/20/2020"
-output: html_document
----
-Set up working directory
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-setwd("~/Dropbox/PDF UQAT/Data synthesis/Data")
-```
-
 Import the library that contains access to Stats Canada data from R. 
 ```{r}
 library(cansim)
@@ -38,13 +26,57 @@ Pop_CMA_1=Pop_CMA%>%
   select(Geographic.code, Geographic.name..english, Geographic.type..english, Province...territory..english, Population..2016, Land.area.in.square.kilometres..2016, Population.density.per.square.kilometre..2016, National.population.rank..2016, Provincial.territorial.population.rank..2016)%>% #Slect only useful columns
   rename(Code=Geographic.code, City=Geographic.name..english, Type=Geographic.type..english, Province=Province...territory..english, Population=Population..2016, Area=Land.area.in.square.kilometres..2016, Density=Population.density.per.square.kilometre..2016, CanRank=National.population.rank..2016, ProvRank=Provincial.territorial.population.rank..2016)%>% #Change the column names for something more manageable
   filter(`Type`=="Census metropolitan area (CMA)")%>%
-  mutate(City = revalue(City, c("Qu\xe9bec"="Quebec", "Trois-Rivi\xe8res"="Trois-Rivieres", "Montr\xe9al"="Montreal" )))%>%#Correct issues with French accents in city names (é and è are \xe9 or \xe8)
+  mutate(City = revalue(City, c("Qu\xe9bec"="Québec", "Trois-Rivi\xe8res"="Trois-Rivières", "Montr\xe9al"="Montréal" )))%>%#Correct issues with French accents in city names (é and è are \xe9 or \xe8)
   arrange(desc(Population))
 ```
 
 Keep the top 20 since with that number we get at least one city per province. 
 ```{r}
 Pop_CMA_2=Pop_CMA_1%>%
-  top_n(20, Population)
+  top_n(20, Population)%>%
+  droplevels()
 ```
 
+
+Try to get some geographic data form the CMAs from stat can... using help form https://datacarpentry.org/r-raster-vector-geospatial/06-vector-open-shapefile-in-r/
+The data is the first one in the list here: https://open.canada.ca/data/en/dataset/a1e5fa53-2a93-4c5e-89a3-6cbfd9bec199
+```{r}
+library(sf)
+CMA_boundaries <- st_read("lcma000a16a_e.shp")
+
+st_geometry_type(CMA_boundaries)# It's a polygon object
+st_crs(CMA_boundaries) # It's North_American_Datum_1983
+st_bbox(CMA_boundaries) #The spatial extent of a shapefile or R spatial object represents the geographic “edge” or location that is the furthest north, south east and west. Thus is represents the overall geographic coverage of the spatial object. 
+CMA_boundaries# view metadata
+CMA_boundaries$CMANAME
+
+```
+```{r}
+st_bbox(CMA_boundaries) 
+```
+Filter by the top 20 in Pop_CMA_2 and fix issues associated with various spelling for Ottawa-Gatineau. 
+```{r}
+CMA_boundaries_notOttawa=CMA_boundaries%>%
+ dplyr::filter(CMANAME %in% c(levels(Pop_CMA_2$City)))
+
+CMA_boundaries_Ottawa=CMA_boundaries%>%
+   dplyr::filter(CMANAME %in% c("Ottawa - Gatineau (Ontario part / partie de l'Ontario)"))%>%
+  mutate(CMANAME = revalue(CMANAME, c("Ottawa - Gatineau (Ontario part / partie de l'Ontario)"="Ottawa - Gatineau" )))%>%
+   mutate(PRNAME = revalue(PRNAME, c("Ontario"="Ontario/Quebec" )))
+
+CMA_boundaries_Gatineau=CMA_boundaries%>%
+   dplyr::filter(CMANAME %in% c('Ottawa - Gatineau (partie du Québec / Quebec part)'))%>%
+  mutate(CMANAME = revalue(CMANAME, c('Ottawa - Gatineau (partie du Québec / Quebec part)'="Ottawa - Gatineau")))%>%
+   mutate(PRNAME = revalue(PRNAME, c('Quebec / Québec'="Ontario/Quebec")))
+
+CMA_boundaries_OttawaGatineau=st_join(CMA_boundaries_Gatineau, CMA_boundaries_Ottawa)
+
+CMA_boundaries_red=st_join(CMA_boundaries_notOttawa, CMA_boundaries_OttawaGatineau)
+levels(CMA_boundaries_red$CMANAME)
+
+```
+Export the subsetted shapefile layer:
+```{r}
+st_write(CMA_boundaries_red, "CMA_boundary_red.shp")
+
+```
