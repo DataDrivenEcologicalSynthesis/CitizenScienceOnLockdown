@@ -1,0 +1,50 @@
+---
+title: "Stats can"
+author: "Mélanie Jean"
+date: "5/20/2020"
+output: html_document
+---
+Set up working directory
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Dropbox/PDF UQAT/Data synthesis/Data")
+```
+
+Import the library that contains access to Stats Canada data from R. 
+```{r}
+library(cansim)
+library(plyr)
+library(tidyverse)
+library(cancensus)
+```
+
+Retrieve population data from the last census (2016). Catalogue no 051-0056 (based on a quick search on their website). That table seems to have population, but not density. 
+Also this is just for metropolitan areas, so only Winnipeg in Manitoba...
+```{r}
+#data <- get_cansim("051-0056") 
+Pop_CMA=read.csv("T201EN.csv", header=T)
+
+#get_cansim("98-402-X2016001")
+# This would be the table that I would actually need but it sends a download error. So I manuallay downloaded the data here: https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/hlt-fst/pd-pl/Table.cfm?Lang=Eng&T=205&S=3&RPP=100
+```
+All cities are listed as city, province, except for 
+Ottawa-Gatineau, Ontario part, Ontario/Quebec
+Ontario/Quebec will be used for Ottawa-Gatineau. May be more tricky to analyze later on though, but I still think it should count as one agglomeration. 
+
+This organizes the data into the 35 census metropolitan areas of Canada and sorts them by descending population. 
+```{r}
+#With the complete dataset
+Pop_CMA_1=Pop_CMA%>%
+  select(Geographic.code, Geographic.name..english, Geographic.type..english, Province...territory..english, Population..2016, Land.area.in.square.kilometres..2016, Population.density.per.square.kilometre..2016, National.population.rank..2016, Provincial.territorial.population.rank..2016)%>% #Slect only useful columns
+  rename(Code=Geographic.code, City=Geographic.name..english, Type=Geographic.type..english, Province=Province...territory..english, Population=Population..2016, Area=Land.area.in.square.kilometres..2016, Density=Population.density.per.square.kilometre..2016, CanRank=National.population.rank..2016, ProvRank=Provincial.territorial.population.rank..2016)%>% #Change the column names for something more manageable
+  filter(`Type`=="Census metropolitan area (CMA)")%>%
+  mutate(City = revalue(City, c("Qu\xe9bec"="Quebec", "Trois-Rivi\xe8res"="Trois-Rivieres", "Montr\xe9al"="Montreal" )))%>%#Correct issues with French accents in city names (é and è are \xe9 or \xe8)
+  arrange(desc(Population))
+```
+
+Keep the top 20 since with that number we get at least one city per province. 
+```{r}
+Pop_CMA_2=Pop_CMA_1%>%
+  top_n(20, Population)
+```
+
