@@ -77,7 +77,7 @@ CMA_boundaries_red=st_join(CMA_boundaries_notOttawa, CMA_boundaries_OttawaGatine
 ```
 Export the subsetted shapefile layer:
 ```{r}
-st_write(CMA_boundaries_red, "CMA_boundary_red.shp")
+st_write(CMA_boundaries_red, "../Data/CMA_boundary_red.shp")
 ```
 
 ### Spatial data manipulations
@@ -139,5 +139,5 @@ ggplot() +
 Export the select data points. 
 ```{r}
 iNat_birds_CMA=stations_subset
-write.csv(iNat_birds_CMA, 'iNat_birds_CMA.csv')
+write.csv(iNat_birds_CMA, '../Data/iNat_birds_CMA.csv')
 ```
