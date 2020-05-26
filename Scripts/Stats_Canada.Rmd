@@ -23,11 +23,11 @@ This organizes the data into the 35 census metropolitan areas of Canada and sort
 ```{r}
 #With the complete dataset
 Pop_CMA_1=Pop_CMA%>%
-  select(Geographic.code, Geographic.name..english, Geographic.type..english, Province...territory..english, Population..2016, Land.area.in.square.kilometres..2016, Population.density.per.square.kilometre..2016, National.population.rank..2016, Provincial.territorial.population.rank..2016)%>% #Slect only useful columns
-  rename(Code=Geographic.code, City=Geographic.name..english, Type=Geographic.type..english, Province=Province...territory..english, Population=Population..2016, Area=Land.area.in.square.kilometres..2016, Density=Population.density.per.square.kilometre..2016, CanRank=National.population.rank..2016, ProvRank=Provincial.territorial.population.rank..2016)%>% #Change the column names for something more manageable
-  filter(`Type`=="Census metropolitan area (CMA)")%>%
-  mutate(City = revalue(City, c("Qu\xe9bec"="Québec", "Trois-Rivi\xe8res"="Trois-Rivières", "Montr\xe9al"="Montréal" )))%>%#Correct issues with French accents in city names (é and è are \xe9 or \xe8)
-  arrange(desc(Population))
+  dplyr::select(Geographic.code, Geographic.name..english, Geographic.type..english, Province...territory..english, Population..2016, Land.area.in.square.kilometres..2016, Population.density.per.square.kilometre..2016, National.population.rank..2016, Provincial.territorial.population.rank..2016)%>% #Slect only useful columns
+  dplyr::rename(Code=Geographic.code, City=Geographic.name..english, Type=Geographic.type..english, Province=Province...territory..english, Population=Population..2016, Area=Land.area.in.square.kilometres..2016, Density=Population.density.per.square.kilometre..2016, CanRank=National.population.rank..2016, ProvRank=Provincial.territorial.population.rank..2016)%>% #Change the column names for something more manageable
+  dplyr::filter(`Type`=="Census metropolitan area (CMA)")%>%
+  dplyr::mutate(City = revalue(City, c("Qu\xe9bec"="Québec", "Trois-Rivi\xe8res"="Trois-Rivières", "Montr\xe9al"="Montréal" )))%>%#Correct issues with French accents in city names (é and è are \xe9 or \xe8)
+  dplyr::arrange(desc(Population))
 ```
 
 Keep the top 20 since with that number we get at least one city per province. 
@@ -44,11 +44,11 @@ The data is the first one in the list here: https://open.canada.ca/data/en/datas
 library(sf)
 CMA_boundaries <- st_read("lcma000a16a_e.shp")
 
-st_geometry_type(CMA_boundaries)# It's a polygon object
+#st_geometry_type(CMA_boundaries)# It's a polygon object
 st_crs(CMA_boundaries) # It's North_American_Datum_1983
-st_bbox(CMA_boundaries) #The spatial extent of a shapefile or R spatial object represents the geographic “edge” or location that is the furthest north, south east and west. Thus is represents the overall geographic coverage of the spatial object. 
-CMA_boundaries# view metadata
-CMA_boundaries$CMANAME
+#st_bbox(CMA_boundaries) #The spatial extent of a shapefile or R spatial object represents the geographic “edge” or location that is the furthest north, south east and west. Thus is represents the overall geographic coverage of the spatial object. 
+#CMA_boundaries# view metadata
+#CMA_boundaries$CMANAME
 
 ```
 ```{r}
@@ -72,11 +72,72 @@ CMA_boundaries_Gatineau=CMA_boundaries%>%
 CMA_boundaries_OttawaGatineau=st_join(CMA_boundaries_Gatineau, CMA_boundaries_Ottawa)
 
 CMA_boundaries_red=st_join(CMA_boundaries_notOttawa, CMA_boundaries_OttawaGatineau)
-levels(CMA_boundaries_red$CMANAME)
+#levels(CMA_boundaries_red$CMANAME)
 
 ```
 Export the subsetted shapefile layer:
 ```{r}
 st_write(CMA_boundaries_red, "CMA_boundary_red.shp")
+```
 
+### Spatial data manipulations
+
+```{r}
+library(raster)
+library(mapproj)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(rgeos)
+library(sf)
+library(rgeos)
+```
+Plot?
+```{r}
+map1=ggplot() + 
+  geom_sf(data = CMA_boundaries_red, size = 0.5, color = "black", fill = "cyan1")+ 
+  ggtitle("CMA Boundaries") + 
+  coord_sf()+theme_bw()
+map1
+```
+
+
+#### Get data from Shuang's code to extrat GBIF bird occurrences (finaldata)
+
+The coordinate data from iNaturalist downlaoded thriough GBIF was in degree decimals, which is usually WGS84 for the projection. Its number is 4326. If we decide to switch how to import data at some point that is something to look at. 
+```{r}
+sites <- st_as_sf(finaldata, coords = c("decimalLongitude", "decimalLatitude"), 
+    crs = 4326, agr = "constant") 
+plot(sites) # it understands that it's a geographic system
+
+ggplot() +
+  geom_sf(data = sites, size = 1, shape = 23, fill = "slateblue4") +   
+  geom_sf(data = CMA_boundaries_red, size = 1, color = "cyan", fill=NA)
+
+# Now both can be read in the same map. Try to proceed with clipping the data.   
+```
+
+Let's try to find some code to clip this huge dataset to just the points that fall within the polygons. 
+```{r}
+#beware CMA_boundaries is in epsg 3347 and sites is in 4326
+newData <- st_transform(sites, crs=3347)
+ggplot() +
+  geom_sf(data = newData, size = 1, shape = 23, fill = "slateblue4") +   
+  geom_sf(data = CMA_boundaries_red, size = 1, color = "cyan", fill=NA)
+
+stations_subset <- newData[CMA_boundaries_red, ]
+dim(stations_subset)
+dim(newData)
+plot(CMA_boundaries_red)
+points(stations_subset)
+
+ggplot() +
+  geom_sf(data = stations_subset, size = 1, shape = 23, fill = "slateblue4") +   
+  geom_sf(data = CMA_boundaries_red, size = 1, color = "cyan", fill=NA)+
+  theme_bw()
+ ```
+
+Export the select data points. 
+```{r}
+iNat_birds_CMA=stations_subset
+write.csv(iNat_birds_CMA, 'iNat_birds_CMA.csv')
 ```
