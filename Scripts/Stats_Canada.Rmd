@@ -10,7 +10,7 @@ Retrieve population data from the last census (2016). Catalogue no 051-0056 (bas
 Also this is just for metropolitan areas, so only Winnipeg in Manitoba...
 ```{r}
 #data <- get_cansim("051-0056") 
-Pop_CMA=read.csv("T201EN.csv", header=T)
+Pop_CMA = read.csv("../Data/T201EN.CSV", header=T)
 
 #get_cansim("98-402-X2016001")
 # This would be the table that I would actually need but it sends a download error. So I manuallay downloaded the data here: https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/hlt-fst/pd-pl/Table.cfm?Lang=Eng&T=205&S=3&RPP=100
@@ -26,7 +26,7 @@ Pop_CMA_1=Pop_CMA%>%
   dplyr::select(Geographic.code, Geographic.name..english, Geographic.type..english, Province...territory..english, Population..2016, Land.area.in.square.kilometres..2016, Population.density.per.square.kilometre..2016, National.population.rank..2016, Provincial.territorial.population.rank..2016)%>% #Slect only useful columns
   dplyr::rename(Code=Geographic.code, City=Geographic.name..english, Type=Geographic.type..english, Province=Province...territory..english, Population=Population..2016, Area=Land.area.in.square.kilometres..2016, Density=Population.density.per.square.kilometre..2016, CanRank=National.population.rank..2016, ProvRank=Provincial.territorial.population.rank..2016)%>% #Change the column names for something more manageable
   dplyr::filter(`Type`=="Census metropolitan area (CMA)")%>%
-  dplyr::mutate(City = revalue(City, c("Qu\xe9bec"="Québec", "Trois-Rivi\xe8res"="Trois-Rivières", "Montr\xe9al"="Montréal" )))%>%#Correct issues with French accents in city names (é and è are \xe9 or \xe8)
+  dplyr::mutate(City = revalue(City, c("Qu\xe9bec"="QuÃ©bec", "Trois-Rivi\xe8res"="Trois-RiviÃ¨res", "Montr\xe9al"="MontrÃ©al" )))%>%#Correct issues with French accents in city names (Ã© and Ã¨ are \xe9 or \xe8)
   dplyr::arrange(desc(Population))
 ```
 
@@ -42,11 +42,13 @@ Try to get some geographic data form the CMAs from stat can... using help form h
 The data is the first one in the list here: https://open.canada.ca/data/en/dataset/a1e5fa53-2a93-4c5e-89a3-6cbfd9bec199
 ```{r}
 library(sf)
-CMA_boundaries <- st_read("lcma000a16a_e.shp")
+CMA_boundaries <- st_read("../Data/lcma000a16a_e.shp")
+# same issue as before, the data loads if I copy/paste to the console
+# gonna try to figure out how to make it work within Rmd
 
 #st_geometry_type(CMA_boundaries)# It's a polygon object
 st_crs(CMA_boundaries) # It's North_American_Datum_1983
-#st_bbox(CMA_boundaries) #The spatial extent of a shapefile or R spatial object represents the geographic “edge” or location that is the furthest north, south east and west. Thus is represents the overall geographic coverage of the spatial object. 
+#st_bbox(CMA_boundaries) #The spatial extent of a shapefile or R spatial object represents the geographic âedgeâ or location that is the furthest north, south east and west. Thus is represents the overall geographic coverage of the spatial object. 
 #CMA_boundaries# view metadata
 #CMA_boundaries$CMANAME
 
@@ -65,9 +67,9 @@ CMA_boundaries_Ottawa=CMA_boundaries%>%
    mutate(PRNAME = revalue(PRNAME, c("Ontario"="Ontario/Quebec" )))
 
 CMA_boundaries_Gatineau=CMA_boundaries%>%
-   dplyr::filter(CMANAME %in% c('Ottawa - Gatineau (partie du Québec / Quebec part)'))%>%
-  mutate(CMANAME = revalue(CMANAME, c('Ottawa - Gatineau (partie du Québec / Quebec part)'="Ottawa - Gatineau")))%>%
-   mutate(PRNAME = revalue(PRNAME, c('Quebec / Québec'="Ontario/Quebec")))
+   dplyr::filter(CMANAME %in% c('Ottawa - Gatineau (partie du QuÃ©bec / Quebec part)'))%>%
+  mutate(CMANAME = revalue(CMANAME, c('Ottawa - Gatineau (partie du QuÃ©bec / Quebec part)'="Ottawa - Gatineau")))%>%
+   mutate(PRNAME = revalue(PRNAME, c('Quebec / QuÃ©bec'="Ontario/Quebec")))
 
 CMA_boundaries_OttawaGatineau=st_join(CMA_boundaries_Gatineau, CMA_boundaries_Ottawa)
 
