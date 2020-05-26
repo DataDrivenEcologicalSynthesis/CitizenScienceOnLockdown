@@ -34,3 +34,6 @@ finaldata<-Canadadata %>%
 				  , dateIdentified, taxonID, scientificName, order, family
 				  , genus, species, genericName, acceptedScientificName
 				  , verbatimScientificName)
+
+# let's save it so that we can use it in other scripts
+write.csv(finaldata, "Data/Rgbif_data.csv")
