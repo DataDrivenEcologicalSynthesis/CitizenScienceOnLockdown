@@ -13,7 +13,7 @@ test <- get_inat_obs(year = 2020
 					 , month = 4
 					 , day = 5
 					 , geo = T
-					 , bounds = c(42, 141, 71, 52)
+					 , bounds = c(42, -141, 71, -52)
 					 , maxresults = 1000, 
 					 taxon_name="Aves")# I think this last argument selects only birds
 # we get the 1000 max results
@@ -31,5 +31,5 @@ test2 <- ebirdregion(loc="CA", key = "hth3fsfparb7", max=100)
 test2 <- get_inat_obs(year = 2020
 					 , month = 4
 					 , geo = T
-					 , bounds = c(40, 130, 60, 52) # updated the coordinates to select just southern Canada
+					 , bounds = c(40, -130, 60, -52) # updated the coordinates to select just southern Canada
 					 ,taxon_name="Aves")# I think this last argument selects only birds
