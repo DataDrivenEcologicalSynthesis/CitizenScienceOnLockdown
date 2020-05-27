@@ -14,7 +14,8 @@ test <- get_inat_obs(year = 2020
 					 , day = 5
 					 , geo = T
 					 , bounds = c(42, 141, 71, 52)
-					 , maxresults = 1000)
+					 , maxresults = 1000, 
+					 taxon_name="Aves")# I think this last argument selects only birds
 # we get the 1000 max results
 # filter it to only keep the birds (Aves), reduces to 282 results
 test <- test[test$iconic_taxon_name=="Aves",]
