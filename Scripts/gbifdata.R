@@ -1,7 +1,7 @@
 #installation
 # install.packages("rgbif")
 # install.packages('bit64')
-library(rgbif)
+# library(rgbif)
 library(dplyr)
 
 ###for all the iNat bird data of Canada since 2020 from Janurary to May
