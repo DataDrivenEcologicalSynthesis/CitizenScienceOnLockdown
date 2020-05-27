@@ -138,8 +138,12 @@ ggplot() +
   theme_bw()
  ```
 
-Export the select data points. 
+
+Export the select data points. Need to add the city/province it belongs to as columns. 
 ```{r}
+pts.poly <- st_join(stations_subset, CMA_boundaries_red, join = st_intersects)
+
 iNat_birds_CMA=stations_subset
-write.csv(iNat_birds_CMA, '../Data/iNat_birds_CMA.csv')
+write.csv(iNat_birds_CMA, 'iNat_birds_CMA.csv')
+write.csv(pts.poly, 'iNat_birds_CMA_with_labels.csv')
 ```
