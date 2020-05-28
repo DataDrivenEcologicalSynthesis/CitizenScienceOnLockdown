@@ -102,7 +102,7 @@ for(i in 1:nrow(cities)){
 		add_osm_feature("leisure","park") %>%
 		osmdata_sf()
 	#find projection
-	utm_zone <- ceiling((cities.bb[i,2] + 180)/6) 
+	utm_zone <- ceiling((cities.bb$xmin[i] + 180)/6) 
 	proj_string <- paste0("+proj=utm +zone=", utm_zone)
 	#extract parks and project
 	park.poly <- park$osm_polygons %>%
