@@ -1,0 +1,121 @@
+"Geographic code","Geographic name","CSD type","Province or territory","Incompletely enumerated Indian reserves and Indian settlements, 2016","Population, 2016","Population, 2011","2011 adjusted population flag","Incompletely enumerated Indian reserves and Indian settlements, 2011","2016 population review flag","2011 population review or received update flag","Population, % change","Total private dwellings, 2016","Private dwellings occupied by usual residents, 2016","Land area in square kilometres, 2016","Population density per square kilometre, 2016","National population rank, 2016","Provincial/territorial population rank, 2016"
+"01","Canada",,,T,35151728,33476688,F,T,F,,5.0,15412443,14072079,8965588.85,3.9,,
+"3520005","Toronto",City (C),"Ontario",F,2731571,2615060,F,F,F,,4.5,1179057,1112929,630.20,4334.4,1,1
+"2466023","Montréal",Ville (V),"Quebec",F,1704694,1649519,F,F,F,,3.3,843872,779802,365.65,4662.1,2,1
+"4806016","Calgary",City (CY),"Alberta",F,1239220,1096833,F,F,F,,13.0,489650,466725,825.56,1501.1,3,1
+"3506008","Ottawa",City (CV),"Ontario",F,934243,883391,F,F,F,,5.8,395985,373756,2790.30,334.8,4,2
+"4811061","Edmonton",City (CY),"Alberta",F,932546,812201,F,F,F,,14.8,387950,360828,685.25,1360.9,5,2
+"3521005","Mississauga",City (CY),"Ontario",F,721599,713443,F,F,F,,1.1,248469,240913,292.43,2467.6,6,3
+"4611040","Winnipeg",City (CY),"Manitoba",F,705244,663617,F,F,F,,6.3,294245,281046,464.33,1518.8,7,1
+"5915022","Vancouver",City (CY),"British Columbia",F,631486,603502,F,F,F,,4.6,309418,283916,114.97,5492.6,8,1
+"3521010","Brampton",City (CY),"Ontario",F,593638,523906,T,F,F,D,13.3,173428,168011,266.36,2228.7,9,4
+"3525005","Hamilton",City (C),"Ontario",F,536917,519949,F,F,F,,3.3,222918,211596,1117.29,480.6,10,5
+"2423027","Québec",Ville (V),"Quebec",F,531902,516576,T,F,F,D,3.0,266409,252043,453.38,1173.2,11,2
+"5915004","Surrey",City (CY),"British Columbia",F,517887,468251,F,F,F,,10.6,181159,169964,316.41,1636.8,12,2
+"2465005","Laval",Ville (V),"Quebec",F,422993,401553,F,F,F,,5.3,165686,160328,247.23,1710.9,13,3
+"1209034","Halifax",Regional municipality (RGM),"Nova Scotia",F,403131,390086,T,F,F,D,3.3,187338,173324,5490.35,73.4,14,1
+"3539036","London",City (CY),"Ontario",F,383822,366151,F,F,F,,4.8,175558,163140,420.35,913.1,15,6
+"3519036","Markham",City (CY),"Ontario",F,328966,301709,F,F,F,,9.0,106131,102676,212.35,1549.2,16,7
+"3519028","Vaughan",City (CY),"Ontario",F,306233,288301,F,F,F,,6.2,96657,94253,273.56,1119.4,17,8
+"2481017","Gatineau",Ville (V),"Quebec",F,276245,265349,F,F,F,,4.1,125608,118385,342.80,805.8,18,4
+"4711066","Saskatoon",City (CY),"Saskatchewan",F,246376,222246,T,F,T,D,10.9,107098,98565,228.13,1080.0,19,1
+"2458227","Longueuil",Ville (V),"Quebec",F,239700,231409,F,F,F,,3.6,110761,105533,115.75,2070.9,20,5
+"3530013","Kitchener",City (CY),"Ontario",F,233222,219153,F,F,F,,6.4,95495,92217,136.77,1705.2,21,9
+"5915025","Burnaby",City (CY),"British Columbia",F,232755,223218,F,F,F,,4.3,98030,92201,90.61,2568.7,22,3
+"3537039","Windsor",City (CY),"Ontario",F,217188,210891,F,F,F,,3.0,97777,91632,146.38,1483.8,23,10
+"4706027","Regina",City (CY),"Saskatchewan",F,215106,193150,T,F,F,D,11.4,93197,87417,179.97,1195.2,24,2
+"5915015","Richmond",City (CY),"British Columbia",F,198309,190473,F,F,F,,4.1,77478,73457,129.27,1534.1,25,4
+"3519038","Richmond Hill",Town (T),"Ontario",F,195022,185541,F,F,F,,5.1,66465,64116,101.11,1928.8,26,11
+"3524001","Oakville",Town (T),"Ontario",F,193832,182520,F,F,F,,6.2,68617,66269,138.89,1395.6,27,12
+"3524002","Burlington",City (CY),"Ontario",F,183314,175779,F,F,F,,4.3,72535,71373,185.66,987.3,28,13
+"3553005","Greater Sudbury",City (CV),"Ontario",F,161531,160274,F,F,F,,0.8,75029,69152,3228.35,50.0,29,14
+"2443027","Sherbrooke",Ville (V),"Quebec",F,161323,154601,F,F,F,,4.3,80341,73506,353.76,456.0,30,6
+"3518013","Oshawa",City (CY),"Ontario",F,159458,149607,F,F,F,,6.6,64883,62595,145.64,1094.9,31,15
+"2494068","Saguenay",Ville (V),"Quebec",F,145949,144746,F,F,F,,0.8,69859,66246,1128.56,129.3,32,7
+"2425213","Lévis",Ville (V),"Quebec",F,143414,138769,F,F,F,,3.3,62585,60779,449.05,319.4,33,8
+"3543042","Barrie",City (CY),"Ontario",F,141434,136063,T,F,F,B,3.9,54227,52476,99.04,1428.0,34,16
+"5909052","Abbotsford",City (CY),"British Columbia",F,141397,133497,F,F,F,,5.9,51770,49040,375.55,376.5,35,5
+"5915034","Coquitlam",City (CY),"British Columbia",F,139284,126804,T,F,F,B,9.8,54393,51325,122.30,1138.9,36,6
+"2437067","Trois-Rivières",Ville (V),"Quebec",F,134413,131338,F,F,F,,2.3,67771,63157,289.32,464.6,37,9
+"3526053","St. Catharines",City (CY),"Ontario",F,133113,131400,F,F,F,,1.3,59879,56873,96.13,1384.8,38,17
+"3523008","Guelph",City (CY),"Ontario",F,131794,121688,F,F,F,,8.3,55927,52090,87.22,1511.1,39,18
+"3530010","Cambridge",City (CY),"Ontario",F,129920,126748,F,F,F,,2.5,49388,48239,113.01,1149.6,40,19
+"3518009","Whitby",Town (T),"Ontario",F,128377,122022,F,F,F,,5.2,44195,43529,146.66,875.4,41,20
+"5935010","Kelowna",City (CY),"British Columbia",F,127380,117312,F,F,F,,8.6,57433,53903,211.85,601.3,42,7
+"3510010","Kingston",City (CY),"Ontario",F,123798,123363,F,F,F,,0.4,59977,53518,451.19,274.4,43,21
+"3518005","Ajax",Town (T),"Ontario",F,119677,109600,F,F,F,,9.2,38105,37549,67.00,1786.4,44,22
+"5915001","Langley",District municipality (DM),"British Columbia",F,117285,104177,F,F,F,,12.6,43720,41982,308.03,380.8,45,8
+"5917021","Saanich",District municipality (DM),"British Columbia",F,114148,109752,F,F,F,,4.0,49422,46652,103.78,1099.9,46,9
+"2464008","Terrebonne",Ville (V),"Quebec",F,111575,106322,F,F,F,,4.9,42622,41801,154.12,723.9,47,10
+"3524009","Milton",Town (T),"Ontario",F,110128,84362,F,F,F,,30.5,35537,34257,363.22,303.2,48,23
+"1001519","St. John's",City (CY),"Newfoundland and Labrador",F,108860,106172,F,F,F,,2.5,52410,47627,445.88,244.1,49,1
+"3558004","Thunder Bay",City (CY),"Ontario",F,107909,108359,F,F,F,,-0.4,50388,47182,328.36,328.6,50,24
+"3530016","Waterloo",City (CY),"Ontario",F,104986,98780,F,F,F,,6.3,46096,40381,64.02,1639.8,51,25
+"5915011","Delta",District municipality (DM),"British Columbia",F,102238,99863,F,F,F,,2.4,37590,35758,180.20,567.4,52,10
+"3536020","Chatham-Kent",Municipality (MU),"Ontario",F,101647,103671,F,F,F,,-2.0,46103,43026,2457.90,41.4,53,26
+"4808011","Red Deer",City (CY),"Alberta",F,100418,90564,F,F,F,,10.9,42285,39982,104.73,958.8,54,3
+"4811052","Strathcona County",Specialized municipality (SM),"Alberta",F,98044,92490,F,F,F,,6.0,36354,35567,1182.78,82.9,55,4
+"3529006","Brantford",City (CY),"Ontario",F,97496,93650,F,F,F,,4.1,40732,39215,72.44,1345.9,56,27
+"2456083","Saint-Jean-sur-Richelieu",Ville (V),"Quebec",F,95114,92394,F,F,F,,2.9,42036,40843,226.63,419.7,57,11
+"1217030","Cape Breton",Regional municipality (RGM),"Nova Scotia",F,94285,97398,F,F,F,,-3.2,45742,41679,2430.06,38.8,58,2
+"4802012","Lethbridge",City (CY),"Alberta",F,92729,83517,F,F,F,,11.0,39867,37575,122.09,759.5,59,5
+"3518017","Clarington",Municipality (MU),"Ontario",F,92013,84548,F,F,F,,8.8,33384,32838,611.40,150.5,60,28
+"3518001","Pickering",City (CY),"Ontario",F,91771,88721,F,F,F,,3.4,31630,30919,231.55,396.3,61,29
+"5921007","Nanaimo",City (CY),"British Columbia",F,90504,83810,F,F,F,,8.0,40885,39165,90.76,997.2,62,11
+"5933042","Kamloops",City (CY),"British Columbia",F,90280,85678,F,F,F,,5.4,39081,36814,299.25,301.7,63,12
+"3526043","Niagara Falls",City (CY),"Ontario",F,88071,82997,F,F,F,,6.1,37265,35773,209.73,419.9,64,30
+"5915046","North Vancouver",District municipality (DM),"British Columbia",F,85935,84412,F,F,F,,1.8,32624,31116,160.76,534.6,65,13
+"5917034","Victoria",City (CY),"British Columbia",F,85792,80017,F,F,F,,7.2,49212,45762,19.47,4405.8,66,14
+"2458007","Brossard",Ville (V),"Quebec",F,85721,79273,F,F,F,,8.1,34249,33257,45.23,1895.4,67,12
+"2460013","Repentigny",Ville (V),"Quebec",F,84285,82000,F,F,F,,2.8,33876,33321,61.23,1376.5,68,13
+"3519048","Newmarket",Town (T),"Ontario",F,84224,79978,F,F,F,,5.3,29315,28673,38.45,2190.5,69,31
+"5909020","Chilliwack",City (CY),"British Columbia",F,83788,77936,F,F,F,,7.5,34038,32440,261.65,320.2,70,15
+"5915075","Maple Ridge",City (CY),"British Columbia",F,82256,76052,F,F,F,,8.2,31400,30262,266.78,308.3,71,16
+"3515014","Peterborough",City (CY),"Ontario",F,81032,78777,T,F,F,D,2.9,36785,34710,64.25,1261.2,72,32
+"2449058","Drummondville",Ville (V),"Quebec",F,75423,71852,F,F,F,,5.0,35402,34018,247.15,305.2,73,14
+"3516010","Kawartha Lakes",City (CY),"Ontario",F,75423,73219,T,F,F,D,3.0,38444,31106,3084.38,24.5,73,33
+"2475017","Saint-Jérôme",Ville (V),"Quebec",F,74346,68456,F,F,F,,8.6,35316,33642,90.44,822.1,75,15
+"5953023","Prince George",City (CY),"British Columbia",F,74003,71974,F,F,F,,2.8,32098,30236,318.26,232.5,76,17
+"3557061","Sault Ste. Marie",City (CY),"Ontario",F,73368,75141,F,F,F,,-2.4,34485,32634,223.24,328.6,77,34
+"1307022","Moncton",City (C),"New Brunswick",F,71889,69074,F,F,F,,4.1,35380,32135,141.92,506.5,78,1
+"3538030","Sarnia",City (CY),"Ontario",F,71594,72366,F,F,F,,-1.1,33324,31937,164.85,434.3,79,35
+"4816037","Wood Buffalo",Specialized municipality (SM),"Alberta",F,71589,65565,F,F,F,,9.2,30713,25659,61777.65,1.2,80,6
+"5915029","New Westminster",City (CY),"British Columbia",F,70996,65976,F,F,F,,7.6,34235,32708,15.63,4543.4,81,18
+"1301006","Saint John",City (C),"New Brunswick",F,67575,70063,F,F,F,,-3.6,33801,30208,315.96,213.9,82,2
+"3521024","Caledon",Town (T),"Ontario",F,66502,59460,F,F,F,,11.8,22021,21256,688.16,96.6,83,36
+"2447017","Granby",Ville (V),"Quebec",F,66222,63433,F,F,F,,4.4,30880,29948,152.79,433.4,84,16
+"4811062","St. Albert",City (CY),"Alberta",F,65589,61466,F,F,F,,6.7,24446,23954,48.45,1353.9,85,7
+"3528052","Norfolk County",City (CY),"Ontario",F,64044,63175,F,F,F,,1.4,28720,26007,1607.55,39.8,86,37
+"4801006","Medicine Hat",City (CY),"Alberta",F,63260,60005,F,F,F,,5.4,27970,26652,112.04,564.6,87,8
+"4819012","Grande Prairie",City (CY),"Alberta",F,63166,55655,T,F,F,D,13.5,26204,23676,132.73,475.9,88,9
+"4806021","Airdrie",City (CY),"Alberta",F,61581,43271,T,F,F,D,42.3,22398,21661,84.57,728.2,89,10
+"3524015","Halton Hills",Town (T),"Ontario",F,61161,59013,T,F,F,D,3.6,21475,21078,276.27,221.4,90,38
+"5915039","Port Coquitlam",City (CY),"British Columbia",F,58612,55958,T,F,F,B,4.7,22586,21753,29.17,2009.4,91,19
+"1310032","Fredericton",City (C),"New Brunswick",F,58220,56224,F,F,T,,3.6,28431,25957,132.57,439.2,92,3
+"2473015","Blainville",Ville (V),"Quebec",F,56863,53510,F,F,F,,6.3,21006,20600,55.16,1030.9,93,17
+"2454048","Saint-Hyacinthe",Ville (V),"Quebec",F,55648,53236,F,F,F,,4.5,27050,25483,188.97,294.5,94,18
+"3519046","Aurora",Town (T),"Ontario",F,55445,53203,F,F,F,,4.2,19381,18851,49.85,1112.3,95,39
+"5915051","North Vancouver",City (CY),"British Columbia",F,52898,48196,F,F,F,,9.8,26426,24645,11.85,4465.1,96,20
+"3526032","Welland",City (CY),"Ontario",F,52293,50631,F,F,F,,3.3,23323,22490,81.04,645.3,97,40
+"3548044","North Bay",City (CY),"Ontario",F,51553,53651,F,F,F,,-3.9,24799,22614,319.11,161.6,98,41
+"3512005","Belleville",City (CY),"Ontario",F,50716,49454,F,F,F,,2.6,22744,21732,247.25,205.1,99,42
+"2474005","Mirabel",Ville (V),"Quebec",F,50513,41957,F,F,F,,20.4,20395,19631,485.07,104.1,100,19
+
+Note:
+"Incompletely enumerated Indian reserves and Indian settlements, 2016","T = excludes census data for one or more incompletely enumerated Indian reserves or Indian settlements."
+"Incompletely enumerated Indian reserves and Indian settlements, 2011","T = excludes census data for one or more incompletely enumerated Indian reserves or Indian settlements."
+"2011 adjusted population flag","T = adjusted figure due to boundary change."
+"2016 population review flag","T = After the release of the 2016 Census population and dwelling counts, issues could occasionally be uncovered in the data. A successful formal review has been conducted for this particular geographic area. It is not possible to make changes to the 2016 Census population and dwelling count data presented in this product. For more information, refer to Population and dwelling count amendments, 2016 Census."
+"2011 population review or received update flag :"
+"A = This geographic area underwent a formal review in 2011.  The 2011 population and/or dwelling counts have been revised."
+"B = This geographic area underwent a formal review in 2011, resulting in the re-allocation of the population and/or dwelling counts for the area. The 2011 population and/or dwelling counts have been revised."
+"C = This geographic area underwent a formal review in 2011. The 2011 population and/or dwelling counts have been revised. The geographic area also underwent a boundary change since the 2011 Census that resulted in an adjustment to the 2011 population and/or dwelling counts for the area."
+"D = This geographic area underwent a boundary change since the 2011 Census that resulted in an adjustment to the 2011 population and/or dwelling counts for the area."
+"E = The 2011 Census was not completed during the 2011 collection period for this area.   Collection for these communities was conducted in October 2011.  The results are available at Profile for the NHS Special Collection for 13 Indian reserves and Indian settlements in Northern Ontario, 2011."
+"For further information, refer to: http://www12.statcan.gc.ca/census-recensement/2016/dp-pd/hlt-fst/pd-pl/About.cfm."
+
+"Source: Statistics Canada, 2016 Census of Population."
+"How to cite: Statistics Canada. 2017. Population and dwelling counts, for Canada and census subdivisions (municipalities), 2016 and 2011 censuses (table). Population and Dwelling Count Highlight Tables. 2016 Census."
+"Statistics Canada Catalogue no. 98-402-X2016001. Ottawa. Released February 8, 2017."
+"http://www12.statcan.gc.ca/census-recensement/2016/dp-pd/hlt-fst/pd-pl/Tables/File.cfm?T=301&SR=1&RPP=100&PR=0&CMA=0&CSD=0&S=3&O=D&Lang=Eng&OFT=CSV (accessed May 28, 2020)"
+
