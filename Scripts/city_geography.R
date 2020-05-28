@@ -2,6 +2,10 @@
 #   obtain city geography and building bounding boxes   #
 #########################################################
 
+### ATTENTION THIS IS ENCODED IN UTF-8
+# Use File > Reopen with encoding > UTF-8 if you don't have a mac
+
+
 #install the osmdata, sf, tidyverse and ggmap package
 if(!require("osmdata")) install.packages("osmdata")
 if(!require("tidyverse")) install.packages("tidyverse")
@@ -16,7 +20,7 @@ library(ggmap)
 library(lwgeom)
 
 ### load data ###
-cities <- read.csv("Population_top20.csv")
+cities <- read.csv("Data/Population_top20.csv")
 #fix problem names
 cities$Geographic.name <- as.character(cities$Geographic.name)
 cities[2,3] <- "Montréal"
@@ -54,6 +58,7 @@ montreal <- osmdata_sf(get.city)
 montreal.shp <- montreal$osm_multipolygons %>%
             dplyr::filter(name=="Montréal (06)")
 city.shp <-sp::merge(montreal.shp[1,1],cities[2,])
+# PB HERE FOR ME
 cities.shp[[2]] <- city.shp
 
 #Quebec city - province and city share name
@@ -68,7 +73,7 @@ cities.shp[[11]] <- city.shp
 
 ### list to dataframe ###
 #for plotting
-cities.shp.df <- ldply (cities.shp, data.frame) %>% st_as_sf(sf_column_name="geometry")
+cities.shp.df <- plyr::ldply(cities.shp, data.frame) %>% st_as_sf(sf_column_name="geometry")
 
 ############################
 ### build bounding boxes ###
@@ -85,7 +90,7 @@ for(i in 1:nrow(cities)){
 }
 
 #write
-write.csv(cities.bb,"cities_boundingboxes.csv")
+write.csv(cities.bb,"Data/cities_boundingboxes.csv")
 
 ###############################
 ### Extract city properties ###
