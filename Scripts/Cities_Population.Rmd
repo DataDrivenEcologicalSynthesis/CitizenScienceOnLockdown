@@ -36,4 +36,9 @@ Pop_CDS_red=Pop_CDS%>%
   dplyr::arrange(desc(Population..2016))
 ```
 
+Export data
+```{r}
+write.csv(Pop_CDS_red,"Population_top20.csv")
+```
+
 
