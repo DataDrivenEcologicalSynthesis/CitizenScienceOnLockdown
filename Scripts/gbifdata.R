@@ -1,7 +1,7 @@
 #installation
 # install.packages("rgbif")
 # install.packages('bit64')
-# library(rgbif)
+library(rgbif)
 library(dplyr)
 
 ###for all the iNat bird data of Canada since 2020 from Janurary to May
@@ -16,14 +16,22 @@ sum(colnames(Canada_gbif1)==colnames(Canada_gbif2))
 Canada_gbif <- rbind(Canada_gbif1, Canada_gbif2)
 
 ##selecting those has been identified to species level
+### Ok but also we don't want to exclude subspecies!
+Canada_occurrence <- Canada_gbif # keep everything
+
+## selecting those has both longitute and latitude coordinates, coordinate uncertainty <1000 m, in March and April, 
+# that are IDed at the species or subspecies level (not genus or family), and that are from 2016-2020
 Canada_occurrence <- Canada_gbif %>% 
-	filter(taxonRank == "SPECIES")
-# losing 2728 occurences
-## selecting those has both longitute and latitude coordination
-Canada_occurrence <- Canada_occurrence %>% 
 	drop_na(decimalLatitude) %>% 
-	drop_na(decimalLongitude)
-# nothing happens here for me, can someone confirm?
+	drop_na(decimalLongitude)%>%
+	drop_na(coordinateUncertaintyInMeters)%>%
+	filter(coordinateUncertaintyInMeters<1000)%>%
+	filter(month %in% c(3,4))%>% 
+	filter(taxonRank %in% c("SPECIES", "SUBSPECIES"))%>%
+	filter(year>2015.5)
+
+dim(Canada_occurrence)
+dim(Canada_gbif)
 
 ##creating data frame with relevant variables
 Canadadata<-as.data.frame(Canada_occurrence)
@@ -31,9 +39,9 @@ finaldata<-Canadadata %>%
 	dplyr::select(recordedBy,eventDate,year,month,day, stateProvince
 				  , verbatimLocality, decimalLatitude, decimalLongitude
 				  , coordinateUncertaintyInMeters, identificationID
-				  , dateIdentified, taxonID, scientificName, order, family
+				  , dateIdentified, taxonID, taxonRank, scientificName, order, family
 				  , genus, species, genericName, acceptedScientificName
-				  , verbatimScientificName)
+				  , verbatimScientificName) # add in taxon rank
 
 # let's save it so that we can use it in other scripts
-write.csv(finaldata, "Data/Rgbif_data.csv")
+write.csv(finaldata, "R_GBIF_data.csv")
