@@ -8,10 +8,11 @@ setwd("~/My documents/CitizenScienceOnLockdown/Data")
 
 Import the library that contains access to Stats Canada data from R. 
 ```{r}
-library(cansim)
-library(plyr)
-library(tidyverse)
-library(cancensus)
+if(!require("cansim")) install.packages("cansim")
+if(!require("plyr")) install.packages("plyr")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("cancensus")) install.packages("cancensus")
+
 ```
 
 Retrieve population data from the last census (2016). Catalogue no 051-0056 (based on a quick search on their website). That table seems to have population, but not density. 
