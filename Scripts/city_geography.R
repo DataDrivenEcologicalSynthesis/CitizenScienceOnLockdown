@@ -101,11 +101,18 @@ for(i in 1:nrow(cities)){
 		opq() %>%
 		add_osm_feature("leisure","park") %>%
 		osmdata_sf()
-	park.poly <- park$osm_polygons
-	park.mpoly <- park$osm_multipolygons
+	#find projection
+	utm_zone <- ceiling((cities.bb[i,2] + 180)/6) 
+	proj_string <- paste0("+proj=utm +zone=", utm_zone)
+	#extract parks and project
+	park.poly <- park$osm_polygons %>%
+		st_transform(crs=proj_string)
+	park.mpoly <- park$osm_multipolygons %>%
+		st_transform(crs=proj_string)
 	#select parks that are within city
-	city.park.poly <- park.poly[lengths(st_intersects(park.poly,cities.shp[[i]]))!=0,]
-	city.park.mpoly <- park.mpoly[lengths(st_intersects(park.mpoly,cities.shp[[i]]))!=0,]
+	clip.city <- st_transform(cities.shp[[i]],crs=proj_string)
+	city.park.poly <- park.poly[lengths(st_intersects(park.poly,clip.city))!=0,]
+	city.park.mpoly <- park.mpoly[lengths(st_intersects(park.mpoly,clip.city))!=0,]
 	#sum areas
 	park.area <- sum(st_area(city.park.poly)) + sum(st_area(city.park.mpoly))
 	#add area to cities
@@ -113,5 +120,4 @@ for(i in 1:nrow(cities)){
 	#loop status
 	print(cities[i,3])
 }
-
 
