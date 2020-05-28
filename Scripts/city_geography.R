@@ -13,6 +13,7 @@ library(tidyverse)
 library(osmdata)
 library(sf)
 library(ggmap)
+library(lwgeom)
 
 ### load data ###
 cities <- read.csv("Population_top20.csv")
@@ -85,3 +86,27 @@ for(i in 1:nrow(cities)){
 
 #write
 write.csv(cities.bb,"cities_boundingboxes.csv")
+
+###############################
+### Extract city properties ###
+###############################
+#park areas
+for(i in 1:nrow(cities)){
+	park <-  st_bbox(cities.shp[[i]]) %>%
+		opq() %>%
+		add_osm_feature("leisure","park") %>%
+		osmdata_sf()
+	park.poly <- park$osm_polygons
+	park.mpoly <- park$osm_multipolygons
+	#select parks that are within city
+	city.park.poly <- park.poly[lengths(st_intersects(park.poly,cities.shp[[i]]))!=0,]
+	city.park.mpoly <- park.mpoly[lengths(st_intersects(park.mpoly,cities.shp[[i]]))!=0,]
+	#sum areas
+	park.area <- sum(st_area(city.park.poly)) + sum(st_area(city.park.mpoly))
+	#add area to cities
+	cities$park.area[i] <- park.area
+	#loop status
+	print(cities[i,3])
+}
+
+
