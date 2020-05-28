@@ -91,6 +91,8 @@ for(i in 1:nrow(cities)){
 
 #write
 write.csv(cities.bb,"Data/cities_boundingboxes.csv")
+cities.bb <- read.csv("Data/cities_boundingboxes.csv"
+					  , encoding = "UTF-8")
 
 ###############################
 ### Extract city properties ###
