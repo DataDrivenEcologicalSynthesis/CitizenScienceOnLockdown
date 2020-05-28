@@ -58,7 +58,7 @@ montreal <- osmdata_sf(get.city)
 montreal.shp <- montreal$osm_multipolygons %>%
             dplyr::filter(name=="Montréal (06)")
 city.shp <-sp::merge(montreal.shp[1,1],cities[2,])
-# PB HERE FOR ME
+# You might have a problem here due to the encoding
 cities.shp[[2]] <- city.shp
 
 #Quebec city - province and city share name
