@@ -52,7 +52,7 @@ get.city <- getbb("Montréal") %>%
   add_osm_feature(key="boundary",value="administrative") 
 montreal <- osmdata_sf(get.city)
 montreal.shp <- montreal$osm_multipolygons %>%
-            filter(name=="Montréal (06)")
+            dplyr::filter(name=="Montréal (06)")
 city.shp <-sp::merge(montreal.shp[1,1],cities[2,])
 cities.shp[[2]] <- city.shp
 
@@ -62,7 +62,7 @@ get.city <- getbb("Quebec City") %>%
   add_osm_feature(key="boundary",value="administrative") 
 quebec_city <- osmdata_sf(get.city)
 quebec_city.shp <- quebec_city$osm_multipolygons %>%
-  filter(osm_id==2319206)
+  dplyr::filter(osm_id==2319206)
 city.shp <-sp::merge(quebec_city.shp[1,1],cities[11,])
 cities.shp[[11]] <- city.shp
 
