@@ -1,3 +1,7 @@
+# THIS SCRIPT IS TO DOWNLOAD DATA FROM GBIF
+# THE DATA IS THEN CLEANED
+# AND SAVED AS Data/R_GBIF_data.csv 
+
 #installation
 # install.packages("rgbif")
 # install.packages('bit64')
@@ -44,4 +48,5 @@ finaldata<-Canadadata %>%
 				  , verbatimScientificName) # add in taxon rank
 
 # let's save it so that we can use it in other scripts
-write.csv(finaldata, "R_GBIF_data.csv")
+write.csv(finaldata, "Data/R_GBIF_data.csv")
+
