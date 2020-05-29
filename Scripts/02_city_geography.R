@@ -20,7 +20,7 @@ library(ggmap)
 library(lwgeom)
 
 ### load data ###
-cities <- read.csv("Data/Population_top20.csv")
+cities <- read.csv("Data/01_Population_top20.csv")
 #fix problem names
 cities$Geographic.name <- as.character(cities$Geographic.name)
 cities[2,3] <- "Montréal"
@@ -90,8 +90,8 @@ for(i in 1:nrow(cities)){
 }
 
 #write
-write.csv(cities.bb,"Data/cities_boundingboxes.csv", row.names = FALSE)
-cities.bb <- read.csv("Data/cities_boundingboxes.csv"
+write.csv(cities.bb,"Data/02_cities_boundingboxes.csv", row.names = FALSE)
+cities.bb <- read.csv("Data/02_cities_boundingboxes.csv"
 					  , encoding = "UTF-8")
 
 ###############################
@@ -124,4 +124,4 @@ for(i in 1:nrow(cities)){
 }
 
 cities$park.area.percentage <- cities$park.area * 0.000001 / cities$Land.area.in.square.kilometres..2016 *100
-write.csv(cities, "Data/cities_pop_park.csv", rownames = FALSE)
+write.csv(cities, "Data/02_cities_pop_park.csv", rownames = FALSE)

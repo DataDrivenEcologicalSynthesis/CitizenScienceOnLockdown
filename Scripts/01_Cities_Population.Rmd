@@ -38,7 +38,7 @@ Pop_CDS_red=Pop_CDS%>%
 
 Export data
 ```{r}
-write.csv(Pop_CDS_red,"../Data/Population_top20.csv")
+write.csv(Pop_CDS_red,"../Data/01_Population_top20.csv")
 ```
 
 
