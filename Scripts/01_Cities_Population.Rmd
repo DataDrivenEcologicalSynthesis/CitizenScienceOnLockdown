@@ -2,11 +2,19 @@
 Set working directory to the github repo.
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
 ```
 
 
 Import the library that contains access to Stats Canada data from R. 
 ```{r}
+
+if(!require("cansim")) install.packages("cansim")
+if(!require("plyr")) install.packages("plyr")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("cancensus")) install.packages("cancensus")
+
+
 library(cansim)
 library(plyr)
 library(tidyverse)
