@@ -48,12 +48,11 @@ finaldata<-Canadadata %>%
 				  , verbatimScientificName) # add in taxon rank
 
 # let's save it so that we can use it in other scripts
-write.csv(finaldata, "Data/R_GBIF_data.csv")
+write.csv(finaldata, "Data/R_GBIF_data.csv", rownames = FALSE)
+finaldata <- read.csv("Data/R_GBIF_data.csv")
 #####filtering birds in the cities
-setwd("")
 #import data "cities_boundingboxes"
-setwd("")
-citymap<-read.csv("cities_boundingboxes.csv", header=T)
+citymap<-read.csv("Data/cities_boundingboxes.csv", header=T)
 finaldata$city <- NA
 for (i in 1: nrow(citymap)){
 	lat_between <- between(finaldata$decimalLatitude, citymap$ymin[1], citymap$ymax[1])
