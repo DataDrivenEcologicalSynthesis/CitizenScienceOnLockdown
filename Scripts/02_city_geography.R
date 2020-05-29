@@ -21,8 +21,15 @@ library(lwgeom)
 library(pracma)
 library(units)
 
+#ignore this for now lol
+#library(httr)
+#set_config(
+#	use_proxy(url="18.91.12.23", port=8080, username="user",password="password")
+#)	
+
 ### load data ###
-cities <- read.csv("Data/Population_top20.csv")
+cities <- read.csv("Data/01_Population_top20.csv")
+cities$Geographic.name <- as.character(cities$Geographic.name)
 
 #############################
 ### build shape file list ###
@@ -97,9 +104,15 @@ cities.bb <- read.csv("Data/cities_boundingboxes.csv"
 ###############################
 ### Extract city properties ###
 ###############################
+#load data
+cities.bb <- read.csv("Data/02_cities_boundingboxes.csv"
+					  , encoding = "UTF-8")
+cities.clip <- sf::st_read("Data/02_cities_boundaries.shp", crs=4326)
+
 #park areas
 for(i in 1:nrow(cities)){
-	park <-  st_bbox(cities.shp[[i]]) %>%
+	park <-  c(cities.bb$xmin[i],cities.bb$ymin[i],
+			   cities.bb$xmax[i],cities.bb$ymax[i]) %>%
 		opq() %>%
 		add_osm_feature("leisure","park") %>%
 		osmdata_sf(quiet=TRUE)
@@ -112,7 +125,7 @@ for(i in 1:nrow(cities)){
 	park.mpoly <- park$osm_multipolygons %>%
 		st_transform(crs=proj_string)
 	#select parks that are within city
-	clip.city <- st_transform(cities.shp[[i]],crs=proj_string)
+	clip.city <- st_transform(cities.clip[i,],crs=proj_string)
 	city.park.poly <- park.poly[lengths(st_intersects(park.poly,clip.city))!=0,]
 	city.park.mpoly <- park.mpoly[lengths(st_intersects(park.mpoly,clip.city))!=0,]
 	#deal with city.park.mpoly
@@ -135,4 +148,4 @@ for(i in 1:nrow(cities)){
 }
 
 cities$park.area.percentage <- cities$park.area * 0.000001 / cities$Land.area.in.square.kilometres..2016 *100
-write.csv(cities, "Data/cities_pop_park.csv", rownames = FALSE)
+write.csv(cities, "Data/04_cities_pop_park.csv", rownames = FALSE)
