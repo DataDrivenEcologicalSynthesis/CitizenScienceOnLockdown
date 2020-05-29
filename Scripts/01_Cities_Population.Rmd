@@ -2,17 +2,24 @@
 Set working directory to the github repo.
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-setwd("~/My documents/CitizenScienceOnLockdown/Data")
+
 ```
 
 
 Import the library that contains access to Stats Canada data from R. 
 ```{r}
+
 if(!require("cansim")) install.packages("cansim")
 if(!require("plyr")) install.packages("plyr")
 if(!require("tidyverse")) install.packages("tidyverse")
 if(!require("cancensus")) install.packages("cancensus")
 
+
+library(cansim)
+library(plyr)
+library(tidyverse)
+library(cancensus)
+library(tidyr)
 ```
 
 Retrieve population data from the last census (2016). Catalogue no 051-0056 (based on a quick search on their website). That table seems to have population, but not density. 
@@ -39,7 +46,7 @@ Pop_CDS_red=Pop_CDS%>%
 
 Export data
 ```{r}
-write.csv(Pop_CDS_red,"Population_top20.csv")
+write.csv(Pop_CDS_red,"../Data/01_Population_top20.csv")
 ```
 
 

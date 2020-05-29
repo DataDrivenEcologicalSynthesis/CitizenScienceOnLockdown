@@ -1,0 +1,150 @@
+Import the library that contains access to Stats Canada data from R. 
+```{r}
+library(cansim)
+library(plyr)
+library(tidyverse)
+library(cancensus)
+```
+
+Retrieve population data from the last census (2016). Catalogue no 051-0056 (based on a quick search on their website). That table seems to have population, but not density. 
+Also this is just for metropolitan areas, so only Winnipeg in Manitoba...
+```{r}
+#data <- get_cansim("051-0056") 
+Pop_CMA = read.csv("../Data/T201EN.CSV", header=T)
+
+#get_cansim("98-402-X2016001")
+# This would be the table that I would actually need but it sends a download error. So I manuallay downloaded the data here: https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/hlt-fst/pd-pl/Table.cfm?Lang=Eng&T=205&S=3&RPP=100
+```
+All cities are listed as city, province, except for 
+Ottawa-Gatineau, Ontario part, Ontario/Quebec
+Ontario/Quebec will be used for Ottawa-Gatineau. May be more tricky to analyze later on though, but I still think it should count as one agglomeration. 
+
+This organizes the data into the 35 census metropolitan areas of Canada and sorts them by descending population. 
+```{r}
+#With the complete dataset
+Pop_CMA_1=Pop_CMA%>%
+  dplyr::select(Geographic.code, Geographic.name..english, Geographic.type..english, Province...territory..english, Population..2016, Land.area.in.square.kilometres..2016, Population.density.per.square.kilometre..2016, National.population.rank..2016, Provincial.territorial.population.rank..2016)%>% #Slect only useful columns
+  dplyr::rename(Code=Geographic.code, City=Geographic.name..english, Type=Geographic.type..english, Province=Province...territory..english, Population=Population..2016, Area=Land.area.in.square.kilometres..2016, Density=Population.density.per.square.kilometre..2016, CanRank=National.population.rank..2016, ProvRank=Provincial.territorial.population.rank..2016)%>% #Change the column names for something more manageable
+  dplyr::filter(`Type`=="Census metropolitan area (CMA)")%>%
+  dplyr::mutate(City = revalue(City, c("Qu\xe9bec"="QuÃ©bec", "Trois-Rivi\xe8res"="Trois-RiviÃ¨res", "Montr\xe9al"="MontrÃ©al" )))%>%#Correct issues with French accents in city names (Ã© and Ã¨ are \xe9 or \xe8)
+  dplyr::arrange(desc(Population))
+```
+
+Keep the top 20 since with that number we get at least one city per province. 
+```{r}
+Pop_CMA_2=Pop_CMA_1%>%
+  top_n(20, Population)%>%
+  droplevels()
+```
+
+
+Try to get some geographic data form the CMAs from stat can... using help form https://datacarpentry.org/r-raster-vector-geospatial/06-vector-open-shapefile-in-r/
+The data is the first one in the list here: https://open.canada.ca/data/en/dataset/a1e5fa53-2a93-4c5e-89a3-6cbfd9bec199
+```{r}
+library(sf)
+CMA_boundaries <- st_read("../Data/lcma000a16a_e.shp")
+# same issue as before, the data loads if I copy/paste to the console
+# gonna try to figure out how to make it work within Rmd
+
+#st_geometry_type(CMA_boundaries)# It's a polygon object
+st_crs(CMA_boundaries) # It's North_American_Datum_1983
+#st_bbox(CMA_boundaries) #The spatial extent of a shapefile or R spatial object represents the geographic âedgeâ or location that is the furthest north, south east and west. Thus is represents the overall geographic coverage of the spatial object. 
+#CMA_boundaries# view metadata
+#CMA_boundaries$CMANAME
+
+```
+```{r}
+st_bbox(CMA_boundaries) 
+```
+Filter by the top 20 in Pop_CMA_2 and fix issues associated with various spelling for Ottawa-Gatineau. 
+```{r}
+CMA_boundaries_notOttawa=CMA_boundaries%>%
+ dplyr::filter(CMANAME %in% c(levels(Pop_CMA_2$City)))
+
+CMA_boundaries_Ottawa=CMA_boundaries%>%
+   dplyr::filter(CMANAME %in% c("Ottawa - Gatineau (Ontario part / partie de l'Ontario)"))%>%
+  mutate(CMANAME = revalue(CMANAME, c("Ottawa - Gatineau (Ontario part / partie de l'Ontario)"="Ottawa - Gatineau" )))%>%
+   mutate(PRNAME = revalue(PRNAME, c("Ontario"="Ontario/Quebec" )))
+
+CMA_boundaries_Gatineau=CMA_boundaries%>%
+   dplyr::filter(CMANAME %in% c('Ottawa - Gatineau (partie du QuÃ©bec / Quebec part)'))%>%
+  mutate(CMANAME = revalue(CMANAME, c('Ottawa - Gatineau (partie du QuÃ©bec / Quebec part)'="Ottawa - Gatineau")))%>%
+   mutate(PRNAME = revalue(PRNAME, c('Quebec / QuÃ©bec'="Ontario/Quebec")))
+
+CMA_boundaries_OttawaGatineau=st_join(CMA_boundaries_Gatineau, CMA_boundaries_Ottawa)
+
+CMA_boundaries_red=st_join(CMA_boundaries_notOttawa, CMA_boundaries_OttawaGatineau)
+#levels(CMA_boundaries_red$CMANAME)
+
+```
+Export the subsetted shapefile layer:
+```{r}
+st_write(CMA_boundaries_red, "../Data/05_CMA_boundary_red.shp")
+```
+
+### Spatial data manipulations
+
+```{r}
+library(raster)
+library(mapproj)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(rgeos)
+library(sf)
+library(rgeos)
+```
+Plot?
+```{r}
+map1=ggplot() + 
+  geom_sf(data = CMA_boundaries_red, size = 0.5, color = "black", fill = "cyan1")+ 
+  ggtitle("CMA Boundaries") + 
+  coord_sf()+theme_bw()
+map1
+```
+
+
+#### Get data from Shuang's code to extrat GBIF bird occurrences (finaldata)
+
+The coordinate data from iNaturalist downlaoded thriough GBIF was in degree decimals, which is usually WGS84 for the projection. Its number is 4326. If we decide to switch how to import data at some point that is something to look at. 
+```{r}
+sites <- st_as_sf(finaldata, coords = c("decimalLongitude", "decimalLatitude"), 
+    crs = 4326, agr = "constant") 
+plot(sites) # it understands that it's a geographic system
+
+ggplot() +
+  geom_sf(data = sites, size = 1, shape = 23, fill = "slateblue4") +   
+  geom_sf(data = CMA_boundaries_red, size = 1, color = "cyan", fill=NA)
+
+# Now both can be read in the same map. Try to proceed with clipping the data.   
+```
+
+Let's try to find some code to clip this huge dataset to just the points that fall within the polygons. 
+```{r}
+#beware CMA_boundaries is in epsg 3347 and sites is in 4326
+newData <- st_transform(sites, crs=3347)
+ggplot() +
+  geom_sf(data = newData, size = 1, shape = 23, fill = "slateblue4") +   
+  geom_sf(data = CMA_boundaries_red, size = 1, color = "cyan", fill=NA)
+
+stations_subset <- newData[CMA_boundaries_red, ]
+dim(stations_subset)
+dim(newData)
+plot(CMA_boundaries_red)
+points(stations_subset)
+
+ggplot() +
+  geom_sf(data = stations_subset, size = 1, shape = 23, fill = "slateblue4") +   
+  geom_sf(data = CMA_boundaries_red, size = 1, color = "cyan", fill=NA)+
+  theme_bw()
+```
+
+Export the select data points. Need to add the city/province it belongs to as columns. 
+```{r}
+pts.poly <- st_join(stations_subset, CMA_boundaries_red, join = st_intersects)
+
+iNat_birds_CMA=stations_subset
+write.csv(iNat_birds_CMA, '../Data/05_iNat_birds_CMA.csv')
+write.csv(pts.poly, '../Data/05_iNat_birds_CMA_with_labels.csv')
+
+```
+
