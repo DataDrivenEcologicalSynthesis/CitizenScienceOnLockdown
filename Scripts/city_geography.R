@@ -90,7 +90,7 @@ for(i in 1:nrow(cities)){
 }
 
 #write
-write.csv(cities.bb,"Data/cities_boundingboxes.csv")
+write.csv(cities.bb,"Data/cities_boundingboxes.csv", row.names = FALSE)
 cities.bb <- read.csv("Data/cities_boundingboxes.csv"
 					  , encoding = "UTF-8")
 
@@ -120,6 +120,8 @@ for(i in 1:nrow(cities)){
 	#add area to cities
 	cities$park.area[i] <- park.area
 	#loop status
-	print(cities[i,3])
+	print(cities[i,"Geographic.name"])
 }
 
+cities$park.area.percentage <- cities$park.area * 0.000001 / cities$Land.area.in.square.kilometres..2016 *100
+write.csv(cities, "Data/cities_pop_park.csv", rownames = FALSE)
