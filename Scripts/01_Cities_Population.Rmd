@@ -1,0 +1,52 @@
+
+Set working directory to the github repo.
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Import the library that contains access to Stats Canada data from R. 
+```{r}
+<<<<<<< HEAD:Scripts/Cities_Population.Rmd
+if(!require("cansim")) install.packages("cansim")
+if(!require("plyr")) install.packages("plyr")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("cancensus")) install.packages("cancensus")
+
+=======
+library(cansim)
+library(plyr)
+library(tidyverse)
+library(cancensus)
+library(tidyr)
+>>>>>>> 21ebd10805d90be37cc7702f9bc5432551e25d9f:Scripts/01_Cities_Population.Rmd
+```
+
+Retrieve population data from the last census (2016). Catalogue no 051-0056 (based on a quick search on their website). That table seems to have population, but not density. 
+Also this is just for metropolitan areas, so only Winnipeg in Manitoba...
+```{r}
+Pop_CDS = read.csv("../Data/Municipalities_populations_T30120200528111803.CSV")
+# Data manually downloaded from https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/hlt-fst/pd-pl/Table.cfm?Lang=Eng&T=701&S=3
+```
+
+This table include data on population density and estimates for all different levels of divisions in Canada. Beware there are still issues with French accents. Exclude the part about Canada and the lines below. 
+
+```{r}
+#With the complete dataset
+Pop_CDS_red=Pop_CDS%>%
+	drop_na(Population..2016)%>%
+	filter(Geographic.name!="Canada")%>%
+	top_n(20, Population..2016)%>%
+  	droplevels()%>%
+	mutate(Geographic.name = str_replace(Geographic.name, "Montr�al", "Montreal"))%>%
+	mutate(Geographic.name = str_replace(Geographic.name, "Qu�bec", "Quebec"))%>%
+	select(Geographic.code,Geographic.name, CSD.type, Province.or.territory, Population..2016, Total.private.dwellings..2016, Private.dwellings.occupied.by.usual.residents..2016, Land.area.in.square.kilometres..2016, Population.density.per.square.kilometre..2016)%>% #Select useful columns only
+  dplyr::arrange(desc(Population..2016))
+```
+
+Export data
+```{r}
+write.csv(Pop_CDS_red,"../Data/01_Population_top20.csv")
+```
+
+
