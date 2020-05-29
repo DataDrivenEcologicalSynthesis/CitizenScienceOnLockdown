@@ -18,6 +18,8 @@ library(osmdata)
 library(sf)
 library(ggmap)
 library(lwgeom)
+library(pracma)
+library(units)
 
 ### load data ###
 cities <- read.csv("Data/Population_top20.csv")
@@ -100,7 +102,7 @@ for(i in 1:nrow(cities)){
 	park <-  st_bbox(cities.shp[[i]]) %>%
 		opq() %>%
 		add_osm_feature("leisure","park") %>%
-		osmdata_sf()
+		osmdata_sf(quiet=TRUE)
 	#find projection
 	utm_zone <- ceiling((cities.bb$xmin[i] + 180)/6) 
 	proj_string <- paste0("+proj=utm +zone=", utm_zone)
@@ -113,8 +115,19 @@ for(i in 1:nrow(cities)){
 	clip.city <- st_transform(cities.shp[[i]],crs=proj_string)
 	city.park.poly <- park.poly[lengths(st_intersects(park.poly,clip.city))!=0,]
 	city.park.mpoly <- park.mpoly[lengths(st_intersects(park.mpoly,clip.city))!=0,]
+	#deal with city.park.mpoly
+	cast<-st_cast(city.park.mpoly$geometry,"POLYGON")
+	area.multi <- c()
+	n <- 0
+	for(c in 1:(length(cast))){ #how many parks are in the multipolygon
+		park <- cast[[c]]
+		for(p in 1:(length(park))){ #how many features are inside each park
+			n <- n+1
+			area.multi[n] <- st_polygon(list(park[[p]])) %>% st_area()
+		}
+	}
 	#sum areas
-	park.area <- sum(st_area(city.park.poly)) + sum(st_area(city.park.mpoly))
+	park.area <- sum(st_area(city.park.poly)) + set_units(sum(area.multi),m^2)
 	#add area to cities
 	cities$park.area[i] <- park.area
 	#loop status
