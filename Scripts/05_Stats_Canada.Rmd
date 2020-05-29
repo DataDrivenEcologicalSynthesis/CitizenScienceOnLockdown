@@ -79,7 +79,7 @@ CMA_boundaries_red=st_join(CMA_boundaries_notOttawa, CMA_boundaries_OttawaGatine
 ```
 Export the subsetted shapefile layer:
 ```{r}
-st_write(CMA_boundaries_red, "../Data/CMA_boundary_red.shp")
+st_write(CMA_boundaries_red, "../Data/05_CMA_boundary_red.shp")
 ```
 
 ### Spatial data manipulations
@@ -143,8 +143,8 @@ Export the select data points. Need to add the city/province it belongs to as co
 pts.poly <- st_join(stations_subset, CMA_boundaries_red, join = st_intersects)
 
 iNat_birds_CMA=stations_subset
-write.csv(iNat_birds_CMA, '../Data/iNat_birds_CMA.csv')
-write.csv(pts.poly, '../Data/iNat_birds_CMA_with_labels.csv')
+write.csv(iNat_birds_CMA, '../Data/05_iNat_birds_CMA.csv')
+write.csv(pts.poly, '../Data/05_iNat_birds_CMA_with_labels.csv')
 
 ```
 
