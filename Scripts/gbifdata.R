@@ -49,4 +49,18 @@ finaldata<-Canadadata %>%
 
 # let's save it so that we can use it in other scripts
 write.csv(finaldata, "Data/R_GBIF_data.csv")
+#####filtering birds in the cities
+setwd("")
+#import data "cities_boundingboxes"
+setwd("")
+citymap<-read.csv("cities_boundingboxes.csv", header=T)
+finaldata$city <- NA
+for (i in 1: nrow(citymap)){
+	lat_between <- between(finaldata$decimalLatitude, citymap$ymin[1], citymap$ymax[1])
+	lon_between <- between(finaldata$decimalLongitude, citymap$xmin[1], citymap$xmax[1])
+	finaldata$city[lat_between&lon_between] <- citymap$city[1]
+}
+citybird <- finaldata[!is.na(finaldata$city),] 
+write.csv(citybird, "Data/R_GBIF_citybird.csv")
+
 
