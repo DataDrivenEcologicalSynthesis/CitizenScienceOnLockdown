@@ -122,22 +122,38 @@ for(i in 1:nrow(cities)){
 	#extract parks and project
 	park.poly <- park$osm_polygons %>%
 		st_transform(crs=proj_string)
+	if (is.null(park$osm_multipolygons)==FALSE) {
 	park.mpoly <- park$osm_multipolygons %>%
 		st_transform(crs=proj_string)
+	} else {
+		park.mpoly <- NULL
+	}
 	#select parks that are within city
 	clip.city <- st_transform(cities.clip[i,],crs=proj_string)
 	city.park.poly <- park.poly[lengths(st_intersects(park.poly,clip.city))!=0,]
+	if (is.null(park.mpoly)==FALSE) {
 	city.park.mpoly <- park.mpoly[lengths(st_intersects(park.mpoly,clip.city))!=0,]
+	} else {
+		city.park.mpoly <- NULL
+	}
 	#deal with city.park.mpoly
+	if (is.null(city.park.mpoly)==FALSE) {
 	cast<-st_cast(city.park.mpoly$geometry,"POLYGON")
+	} else {
+		cast <- NULL
+	}
 	area.multi <- c()
 	n <- 0
+	if (length(cast)>0) {
 	for(c in 1:(length(cast))){ #how many parks are in the multipolygon
 		park <- cast[[c]]
 		for(p in 1:(length(park))){ #how many features are inside each park
 			n <- n+1
 			area.multi[n] <- st_polygon(list(park[[p]])) %>% st_area()
 		}
+	}
+	} else {
+		area.multi <- 0
 	}
 	#sum areas
 	park.area <- sum(st_area(city.park.poly)) + set_units(sum(area.multi),m^2)
@@ -148,4 +164,4 @@ for(i in 1:nrow(cities)){
 }
 
 cities$park.area.percentage <- cities$park.area * 0.000001 / cities$Land.area.in.square.kilometres..2016 *100
-write.csv(cities, "Data/04_cities_pop_park.csv", rownames = FALSE)
+write.csv(cities, "Data/02_cities_pop_park.csv", row.names = FALSE)
