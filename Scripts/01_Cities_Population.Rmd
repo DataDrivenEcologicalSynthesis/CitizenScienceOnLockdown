@@ -2,24 +2,36 @@
 Set working directory to the github repo.
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
 ```
 
 
 Import the library that contains access to Stats Canada data from R. 
 ```{r}
+<<<<<<< HEAD
 <<<<<<< HEAD:Scripts/Cities_Population.Rmd
+=======
+
+>>>>>>> a850a8c464bbff01cd24608a0f4fb4e9dbfa6fc7
 if(!require("cansim")) install.packages("cansim")
 if(!require("plyr")) install.packages("plyr")
 if(!require("tidyverse")) install.packages("tidyverse")
 if(!require("cancensus")) install.packages("cancensus")
 
+<<<<<<< HEAD
 =======
+=======
+
+>>>>>>> a850a8c464bbff01cd24608a0f4fb4e9dbfa6fc7
 library(cansim)
 library(plyr)
 library(tidyverse)
 library(cancensus)
 library(tidyr)
+<<<<<<< HEAD
 >>>>>>> 21ebd10805d90be37cc7702f9bc5432551e25d9f:Scripts/01_Cities_Population.Rmd
+=======
+>>>>>>> a850a8c464bbff01cd24608a0f4fb4e9dbfa6fc7
 ```
 
 Retrieve population data from the last census (2016). Catalogue no 051-0056 (based on a quick search on their website). That table seems to have population, but not density. 
