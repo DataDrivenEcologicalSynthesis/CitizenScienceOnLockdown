@@ -18,9 +18,18 @@ library(osmdata)
 library(sf)
 library(ggmap)
 library(lwgeom)
+library(pracma)
+library(units)
+
+#ignore this for now lol
+#library(httr)
+#set_config(
+#	use_proxy(url="18.91.12.23", port=8080, username="user",password="password")
+#)	
 
 ### load data ###
-cities <- read.csv("Data/Population_top20.csv")
+cities <- read.csv("Data/01_Population_top20.csv")
+cities$Geographic.name <- as.character(cities$Geographic.name)
 
 #############################
 ### build shape file list ###
@@ -95,26 +104,59 @@ cities.bb <- read.csv("Data/cities_boundingboxes.csv"
 ###############################
 ### Extract city properties ###
 ###############################
+#load data
+cities.bb <- read.csv("Data/02_cities_boundingboxes.csv"
+					  , encoding = "UTF-8")
+cities.clip <- sf::st_read("Data/02_cities_boundaries.shp", crs=4326)
+
 #park areas
 for(i in 1:nrow(cities)){
-	park <-  st_bbox(cities.shp[[i]]) %>%
+	park <-  c(cities.bb$xmin[i],cities.bb$ymin[i],
+			   cities.bb$xmax[i],cities.bb$ymax[i]) %>%
 		opq() %>%
 		add_osm_feature("leisure","park") %>%
-		osmdata_sf()
+		osmdata_sf(quiet=TRUE)
 	#find projection
 	utm_zone <- ceiling((cities.bb$xmin[i] + 180)/6) 
 	proj_string <- paste0("+proj=utm +zone=", utm_zone)
 	#extract parks and project
 	park.poly <- park$osm_polygons %>%
 		st_transform(crs=proj_string)
+	if (is.null(park$osm_multipolygons)==FALSE) {
 	park.mpoly <- park$osm_multipolygons %>%
 		st_transform(crs=proj_string)
+	} else {
+		park.mpoly <- NULL
+	}
 	#select parks that are within city
-	clip.city <- st_transform(cities.shp[[i]],crs=proj_string)
+	clip.city <- st_transform(cities.clip[i,],crs=proj_string)
 	city.park.poly <- park.poly[lengths(st_intersects(park.poly,clip.city))!=0,]
+	if (is.null(park.mpoly)==FALSE) {
 	city.park.mpoly <- park.mpoly[lengths(st_intersects(park.mpoly,clip.city))!=0,]
+	} else {
+		city.park.mpoly <- NULL
+	}
+	#deal with city.park.mpoly
+	if (is.null(city.park.mpoly)==FALSE) {
+	cast<-st_cast(city.park.mpoly$geometry,"POLYGON")
+	} else {
+		cast <- NULL
+	}
+	area.multi <- c()
+	n <- 0
+	if (length(cast)>0) {
+	for(c in 1:(length(cast))){ #how many parks are in the multipolygon
+		park <- cast[[c]]
+		for(p in 1:(length(park))){ #how many features are inside each park
+			n <- n+1
+			area.multi[n] <- st_polygon(list(park[[p]])) %>% st_area()
+		}
+	}
+	} else {
+		area.multi <- 0
+	}
 	#sum areas
-	park.area <- sum(st_area(city.park.poly)) + sum(st_area(city.park.mpoly))
+	park.area <- sum(st_area(city.park.poly)) + set_units(sum(area.multi),m^2)
 	#add area to cities
 	cities$park.area[i] <- park.area
 	#loop status
@@ -122,4 +164,4 @@ for(i in 1:nrow(cities)){
 }
 
 cities$park.area.percentage <- cities$park.area * 0.000001 / cities$Land.area.in.square.kilometres..2016 *100
-write.csv(cities, "Data/cities_pop_park.csv", rownames = FALSE)
+write.csv(cities, "Data/02_cities_pop_park.csv", row.names = FALSE)
