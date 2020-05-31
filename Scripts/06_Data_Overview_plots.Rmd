@@ -1,0 +1,71 @@
+---
+title: "Data overview plots"
+author: "Mélanie Jean"
+date: "5/30/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/My documents/CitizenScienceOnLockdown/Data")
+```
+Open useful libraries. 
+```{r}
+library(tidyverse)
+```
+
+Import data
+```{r}
+iNat=read.table('04_Inat_from_clipping_NoDuplicates-csv.tsv',quote= "\"", fill=T, sep='\t',comment.char = "", na.strings=c("NA", ""),header=T)
+```
+
+Plot observations by city x year to see whether the cities we selected actually use iNat. 
+```{r}
+CityTotal=iNat%>%
+   mutate(city = plyr::revalue(city, c("Montréal"="Montreal")))%>%
+ group_by(Prvnc__, city, year)%>%
+  count()
+
+CityTotal$Province=as.factor(CityTotal$Prvnc__)
+
+CityTotal$city=as.factor(CityTotal$city)
+CityTotal$city <- factor(CityTotal$city, levels = c("Vancouver","Surrey", "Calgary","Edmonton", "Saskatoon","Winnipeg","London","Hamilton", "Brampton", "Mississauga","Toronto", "Markham","Vaughan", "Ottawa", "Gatineau" , "Laval" , "Montreal","Longueuil",  "Quebec",  "Halifax"))
+levels(CityTotal$city)
+
+```
+Plot with different colors for different provinces. Quebec-blue, alberta-yellow, bc-green, 
+```{r}
+p=ggplot(data=CityTotal, aes(x=year, y=n))+
+  geom_bar(stat="identity", aes(fill=as.factor(Province)))+
+  facet_wrap(~as.factor(city))+
+  scale_y_continuous(name="Observation counts")+
+    theme_bw()+
+ theme(legend.position = "none")
+p
+```
+
+Import population data
+```{r}
+Pop20=read.csv("01_Population_top20.csv", header=T)
+
+```
+Add populaiton total and density to the city total table
+```{r}
+Pop20.cols=Pop20%>%
+  select(Geographic.name, Population..2016, Population.density.per.square.kilometre..2016)%>%
+  rename(city=Geographic.name) #Change the column names for something more manageable
+
+CityTotal2=left_join(CityTotal, Pop20.cols)%>%
+  mutate(Observations_capita=n/Population..2016)
+
+CityTotal2$city <- factor(CityTotal2$city, levels = c("Vancouver","Surrey", "Calgary","Edmonton", "Saskatoon","Winnipeg","London","Hamilton", "Brampton", "Mississauga","Toronto", "Markham","Vaughan", "Ottawa", "Gatineau" , "Laval" , "Montréal","Longueuil",  "Quebec",  "Halifax"))
+
+p2=ggplot(data=CityTotal2, aes(x=year, y=Observations_capita))+
+  geom_bar(stat="identity", aes(fill=as.factor(city)))+
+  facet_wrap(~as.factor(city))+
+  scale_y_continuous(name="Observation per capita")+
+  theme_bw()+
+ theme(legend.position = "none")
+p2
+```
+
