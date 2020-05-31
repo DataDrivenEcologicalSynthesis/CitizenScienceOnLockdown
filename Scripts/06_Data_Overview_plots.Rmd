@@ -16,32 +16,40 @@ library(tidyverse)
 
 Import data
 ```{r}
-iNat=read.table('04_Inat_from_clipping_NoDuplicates-csv.tsv',quote= "\"", fill=T, sep='\t',comment.char = "", na.strings=c("NA", ""),header=T)
+iNat=read.table("../Data//04_Inat_from_clipping_NoDuplicates-csv.tsv",quote= "\"", fill=T, sep='\t',comment.char = "", na.strings=c("NA", ""), header=T)
 ```
+Some observations from the variable 'city' for Ottawa are in Ontario and some are in Quebec. Same for Gatineau. The issue is resolved when using the variable Ggrphc_n instead. 
 
 Plot observations by city x year to see whether the cities we selected actually use iNat. 
 ```{r}
 CityTotal=iNat%>%
-   mutate(city = plyr::revalue(city, c("Montréal"="Montreal")))%>%
- group_by(Prvnc__, city, year)%>%
+# mutate(Ggrphc_n = plyr::revalue(Ggrphc_n, c("Montreal"="Montreal")))%>%
+ group_by(Prvnc__, Ggrphc_n, year)%>%
   count()
 
 CityTotal$Province=as.factor(CityTotal$Prvnc__)
 
-CityTotal$city=as.factor(CityTotal$city)
-CityTotal$city <- factor(CityTotal$city, levels = c("Vancouver","Surrey", "Calgary","Edmonton", "Saskatoon","Winnipeg","London","Hamilton", "Brampton", "Mississauga","Toronto", "Markham","Vaughan", "Ottawa", "Gatineau" , "Laval" , "Montreal","Longueuil",  "Quebec",  "Halifax"))
-levels(CityTotal$city)
-
+CityTotal$city=as.factor(CityTotal$Ggrphc_n)
+CityTotal$city <- factor(CityTotal$Ggrphc_n, levels = c("Vancouver","Surrey", "Calgary","Edmonton", "Saskatoon","Winnipeg","London","Hamilton", "Brampton", "Mississauga","Toronto", "Markham","Vaughan", "Ottawa", "Gatineau" , "Laval" , "Montreal","Longueuil",  "Quebec",  "Halifax"))
 ```
-Plot with different colors for different provinces. Quebec-blue, alberta-yellow, bc-green, 
+Plot with different colors for different provinces. Quebec-blue, alberta-yellow, bc-green. 
+-> Weird some Ottawa and Gatineau observations are in the wrong province...
 ```{r}
 p=ggplot(data=CityTotal, aes(x=year, y=n))+
-  geom_bar(stat="identity", aes(fill=as.factor(Province)))+
-  facet_wrap(~as.factor(city))+
-  scale_y_continuous(name="Observation counts")+
-    theme_bw()+
- theme(legend.position = "none")
+	geom_bar(stat="identity", aes(fill=as.factor(Province)))+
+	facet_wrap(~as.factor(city))+
+	scale_y_continuous(name="Observation counts")+
+	scale_fill_manual(name="Province", values=c("#F8766D","#FB61D7","#53B400","#A58AFF", "#00C094" ,"#00B6EB",  "#C49A00"))+
+    theme_bw()
 p
+
+#00C094 teal
+#FB61D7 pink
+#F8766D coral
+#53B400 green
+#C49A00 yellow-ish
+#A58AFF purple
+#00B6EB blue
 ```
 
 Import population data
