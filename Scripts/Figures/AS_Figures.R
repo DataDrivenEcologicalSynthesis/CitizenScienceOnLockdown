@@ -82,3 +82,4 @@ jpeg("Figures/Hypothesis_2/AS_ParkAreaPercentage_vs_Richness_wQuarantine.jpg", w
 ggplot(data = final_dataset) +
 	geom_jitter(aes(y = park.area.percentage, x = spc_richness, col=factor(quarantine)))
 dev.off()
+
