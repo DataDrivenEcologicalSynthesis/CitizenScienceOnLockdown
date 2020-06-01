@@ -175,7 +175,7 @@ for(i in 19:nrow(cities)){
 park_poly.shp.df <- plyr::ldply(park_poly.shp, data.frame) %>% st_as_sf(sf_column_name="geometry")
 park_mpoly.shp.df <- plyr::ldply(park_mpoly.shp, data.frame) %>% st_as_sf(sf_column_name="geometry")
 #writing files
-st_write(park_poly.shp.df,"Data/06_park_poly_boundaries.shp")
+st_write(park_poly.shp.df$geometry,"Data/06_park_poly_boundaries.shp",append = F) #only exports geometry
 st_write(park_mpoly.shp.df,"Data/06_park_mpoly_boundaries.shp")
 
 ## write park information ##
