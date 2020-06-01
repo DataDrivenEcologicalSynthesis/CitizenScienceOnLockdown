@@ -52,16 +52,33 @@ rm(inat_clean, cities_info_clean)
 
 # Per city
 # nb of observators against species richness
-jpeg("Figures/Hypothesis_1/AS_Observators_vs_Richness_wCitiesYear.jpg", width = 350, height = 350)
+jpeg("Figures/Hypothesis_1/AS_Observators_vs_Richness_wCitiesYear.jpg", width = 900, height = 500)
 ggplot(data = final_dataset) +
 	geom_jitter(aes(x = nb_observators, y = spc_richness, col=factor(year))) +
 	facet_wrap(~as.factor(Ggrphc_n))
 dev.off()
 
 # nb of observations against species richness
-jpeg("Figures/Hypothesis_1/AS_Observations_vs_Richness_wCitiesYear.jpg", width = 350, height = 350)
+jpeg("Figures/Hypothesis_1/AS_Observations_vs_Richness_wCitiesYear.jpg", width = 900, height = 500)
 ggplot(data = final_dataset) +
 	geom_jitter(aes(x = nb_observations, y = spc_richness, col=factor(year))) +
 	facet_wrap(~as.factor(Ggrphc_n))
 dev.off()
 
+# species richness against park size
+jpeg("Figures/Hypothesis_2/AS_ParkArea_vs_Richness_wCitiesQuarantine.jpg", width = 900, height = 500)
+ggplot(data = final_dataset) +
+	geom_jitter(aes(x = park.area, y = spc_richness, col=factor(quarantine))) +
+	facet_wrap(~as.factor(Ggrphc_n))
+dev.off()
+
+# species richness against percentage of park coverage
+jpeg("Figures/Hypothesis_2/AS_ParkAreaPercentage_vs_Richness_wCitiesQuarantine.jpg", width = 900, height = 500)
+ggplot(data = final_dataset) +
+	geom_jitter(aes(x = park.area.percentage, y = spc_richness, col=factor(quarantine))) +
+	facet_wrap(~as.factor(Ggrphc_n))
+dev.off()
+jpeg("Figures/Hypothesis_2/AS_ParkAreaPercentage_vs_Richness_wQuarantine.jpg", width = 900, height = 500)
+ggplot(data = final_dataset) +
+	geom_jitter(aes(x = park.area.percentage, y = spc_richness, col=factor(quarantine)))
+dev.off()
