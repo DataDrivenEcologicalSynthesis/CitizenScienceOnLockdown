@@ -7,7 +7,6 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-setwd("~/My documents/CitizenScienceOnLockdown/Data")
 ```
 Open useful libraries. 
 ```{r}
@@ -54,7 +53,7 @@ p
 
 Import population data
 ```{r}
-Pop20=read.csv("01_Population_top20.csv", header=T)
+Pop20=read.csv("../Data/01_Population_top20.csv", header=T)
 
 ```
 Add populaiton total and density to the city total table
@@ -66,7 +65,7 @@ Pop20.cols=Pop20%>%
 CityTotal2=left_join(CityTotal, Pop20.cols)%>%
   mutate(Observations_capita=n/Population..2016)
 
-CityTotal2$city <- factor(CityTotal2$city, levels = c("Vancouver","Surrey", "Calgary","Edmonton", "Saskatoon","Winnipeg","London","Hamilton", "Brampton", "Mississauga","Toronto", "Markham","Vaughan", "Ottawa", "Gatineau" , "Laval" , "Montréal","Longueuil",  "Quebec",  "Halifax"))
+CityTotal2$city <- factor(CityTotal2$city, levels = c("Vancouver","Surrey", "Calgary","Edmonton", "Saskatoon","Winnipeg","London","Hamilton", "Brampton", "Mississauga","Toronto", "Markham","Vaughan", "Ottawa", "Gatineau" , "Laval" , "Montreal","Longueuil",  "Quebec",  "Halifax"))
 
 p2=ggplot(data=CityTotal2, aes(x=year, y=Observations_capita))+
   geom_bar(stat="identity", aes(fill=as.factor(city)))+
