@@ -50,6 +50,7 @@ rm(inat_clean, cities_info_clean)
 
 # III. Figures ----
 
+# Per city
 # nb of observators against species richness
 jpeg("Figures/Hypothesis_1/AS_Observators_vs_Richness_wCitiesYear.jpg", width = 350, height = 350)
 ggplot(data = final_dataset) +
@@ -63,3 +64,4 @@ ggplot(data = final_dataset) +
 	geom_jitter(aes(x = nb_observations, y = spc_richness, col=factor(year))) +
 	facet_wrap(~as.factor(Ggrphc_n))
 dev.off()
+
