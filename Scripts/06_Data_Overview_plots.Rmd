@@ -7,7 +7,6 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-setwd("~/My documents/CitizenScienceOnLockdown/Data")
 ```
 Open useful libraries. 
 ```{r}
@@ -57,7 +56,11 @@ p
 
 Import population data
 ```{r}
+<<<<<<< HEAD
 Pop20=read.csv("../Data//01_Population_top20.csv", header=T)
+=======
+Pop20=read.csv("../Data/01_Population_top20.csv", header=T)
+>>>>>>> b5a1100d3fb062eb3c53e795a36ec48d7788b26e
 
 ```
 Add population total and density to the city total table. 
@@ -74,7 +77,11 @@ CityTotal2$Observations_capita=CityTotal2$n/CityTotal2$Population..2016
 
 CityTotal2$Ggrphc_n <- factor(CityTotal$Ggrphc_n, levels = c("Vancouver","Surrey", "Calgary","Edmonton", "Saskatoon","Winnipeg","London","Hamilton", "Brampton", "Mississauga","Toronto", "Markham","Vaughan", "Ottawa", "Gatineau" , "Laval" , "Montreal","Longueuil",  "Quebec",  "Halifax"))
 
+<<<<<<< HEAD
 ```
+=======
+CityTotal2$city <- factor(CityTotal2$city, levels = c("Vancouver","Surrey", "Calgary","Edmonton", "Saskatoon","Winnipeg","London","Hamilton", "Brampton", "Mississauga","Toronto", "Markham","Vaughan", "Ottawa", "Gatineau" , "Laval" , "Montreal","Longueuil",  "Quebec",  "Halifax"))
+>>>>>>> b5a1100d3fb062eb3c53e795a36ec48d7788b26e
 
 Plot the number of observations per 1000 habitants. 
 ```{r}

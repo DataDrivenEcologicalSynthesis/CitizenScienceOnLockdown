@@ -110,12 +110,15 @@ cities.bb <- read.csv("Data/02_cities_boundingboxes.csv"
 cities.clip <- sf::st_read("Data/02_cities_boundaries.shp", crs=4326)
 
 #park areas
-for(i in 1:nrow(cities)){
+park_poly.shp <- list()
+park_mpoly.shp <- list()
+
+for(i in 19:nrow(cities)){
 	park <-  c(cities.bb$xmin[i],cities.bb$ymin[i],
 			   cities.bb$xmax[i],cities.bb$ymax[i]) %>%
 		opq() %>%
 		add_osm_feature("leisure","park") %>%
-		osmdata_sf(quiet=TRUE)
+		osmdata_sf(quiet=F)
 	#find projection
 	utm_zone <- ceiling((cities.bb$xmin[i] + 180)/6) 
 	proj_string <- paste0("+proj=utm +zone=", utm_zone)
@@ -131,8 +134,12 @@ for(i in 1:nrow(cities)){
 	#select parks that are within city
 	clip.city <- st_transform(cities.clip[i,],crs=proj_string)
 	city.park.poly <- park.poly[lengths(st_intersects(park.poly,clip.city))!=0,]
+	#write poly
+	park_poly.shp[[i]] <- city.park.poly
 	if (is.null(park.mpoly)==FALSE) {
 	city.park.mpoly <- park.mpoly[lengths(st_intersects(park.mpoly,clip.city))!=0,]
+	#write mpoly
+	park_mpoly.shp[[i]] <- city.park.mpoly
 	} else {
 		city.park.mpoly <- NULL
 	}
@@ -163,5 +170,14 @@ for(i in 1:nrow(cities)){
 	print(cities[i,"Geographic.name"])
 }
 
+### list to dataframe ###
+#for plotting
+park_poly.shp.df <- plyr::ldply(park_poly.shp, data.frame) %>% st_as_sf(sf_column_name="geometry")
+park_mpoly.shp.df <- plyr::ldply(park_mpoly.shp, data.frame) %>% st_as_sf(sf_column_name="geometry")
+#writing files
+st_write(park_poly.shp.df$geometry,"Data/06_park_poly_boundaries.shp",append = F) #only exports geometry
+st_write(park_mpoly.shp.df,"Data/06_park_mpoly_boundaries.shp")
+
+## write park information ##
 cities$park.area.percentage <- cities$park.area * 0.000001 / cities$Land.area.in.square.kilometres..2016 *100
 write.csv(cities, "Data/02_cities_pop_park.csv", row.names = FALSE)
