@@ -108,6 +108,7 @@
 				 , data = final_dataset)
 	plot(mod1_a, which = 2)
 	plot(mod1_a, which = 3)
+	summary(mod1_a)
 		# not perfect for heteroscedacticity, normality is okayish
 		# species richness increases with nb of observators
 	
@@ -121,6 +122,46 @@
 	# should use this model
 	# technically should probably use a random effect on the cities
 	# so that we can generalize to Canada
+	
+	# Plot to represent that
+	jpeg("Figures/Hypothesis_1/AS_LMglobal_SqrtObs_richness.jpg", width = 900, height = 500)
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness)) +
+		geom_jitter() + 
+		stat_smooth(method=lm)
+	dev.off()
+	jpeg("Figures/Hypothesis_1/AS_LMcities_SqrtObs_richness.jpg", width = 900, height = 500)
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness, col=Ggrphc_n)) +
+		geom_jitter() + 
+		stat_smooth(method=lm)
+	dev.off()
+	jpeg("Figures/Hypothesis_1/AS_LMglobal_SqrtObs_richness_ColCities.jpg", width = 900, height = 500)
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness)) +
+		geom_jitter(aes(col=Ggrphc_n)) + 
+		stat_smooth(method=lm)
+	dev.off()
+	
+	# Is there an effect of the quarantine?
+	mod1_c <- lm(spc_richness ~ sqrt(nb_observators) + quarantine + Ggrphc_n
+				 , data = final_dataset)
+	plot(mod1_c, which = 2)
+	plot(mod1_c, which = 3)
+	Anova(mod1_c, type=3)
+	# apparently not
+	
+
+	# With a random effect of the cities
+	mod1_d <- nlme::lme(spc_richness ~ sqrt(nb_observators) + quarantine
+						, random = ~1|Ggrphc_n
+						, data = final_dataset)
+	summary(mod1_d)
+	# 44% of variation come from the cities
+	# Should be put as a random effect
+	# no effect of the quarantine
+	qqnorm(mod1_d)
+	e <- resid(mod1_d
+			   , type = "normalized")
+	plot(mod1_d$fitted[,"fixed"], e) 
+
 
 # B. Hypothesis 2----
 	plot(spc_richness ~ park.area.percentage
@@ -129,57 +170,94 @@
 	summary(lm(spc_richness ~ park.area.percentage
 			   , data = final_dataset))
 	# doesn't appear to have a significant effect
+	# what about before and after quarantine
+	plot(spc_richness ~ quarantine
+		 , data = final_dataset)
+	mod2_a <- lm(spc_richness ~ park.area.percentage + quarantine
+				 , data = final_dataset)
+	Anova(mod2_a, type=3)
+	# definitely not normal
+	# DO NOT USE THIS MODEL
+	plot(mod2_a, which = 2)
+	plot(mod2_a, which = 3)
 
 # C. Hypothesis 3----
 	# full model
 	
 	# okay so 2 options here:
 # 1. using a lm where the order of the variables matter
-	mod3_a <- lm(spc_richness ~ nb_observators + park.area.percentage + quarantine + Ggrphc_n
+	mod3_a <- lm(spc_richness ~ sqrt(nb_observators) + park.area.percentage + quarantine + Ggrphc_n
 				 , data = final_dataset)
 	anova(mod3_a)
 	plot(mod3_a, which = 2)
 	plot(mod3_a, which = 3)
 	# pretty okay on the assumptions
+	# but doesn't feel right to use it
 
 # 2. using a lm where the order of the variables doesn't matter
 	# BUT we can't add the cities names because of fucking Winnipeg being too correlated to other cities
-	mod3_b <- lm(spc_richness ~ nb_observators + park.area.percentage + quarantine
+	mod3_b <- lm(spc_richness ~ sqrt(nb_observators) + park.area.percentage + quarantine
 				 , data = final_dataset)
 	Anova(mod3_b, type=3)
-	# apparently no effect of the park area or the quarantine
+	# apparently no effect of the park area, effect of the quarantine though
 	# can't add the cities because of fucking winnipeg
-	# Maybe should like to the size of the cities too
+	# Maybe should like to add the size of the cities too
+	# DO NOT USE THIS MODEL
 	plot(mod3_b, which = 2)
 	plot(mod3_b, which = 3)
-	# pretty okay on the assumptions
+	# not so good on the assumptions
 	
 	
 	# Adding the size of the city now
 	# option 1
-	mod3_c <- lm(spc_richness ~ nb_observators + park.area.percentage + Land.area.in.square.kilometres..2016 + Ggrphc_n + quarantine
+	mod3_c <- lm(spc_richness ~ sqrt(nb_observators) + park.area.percentage + Land.area.in.square.kilometres..2016 + Ggrphc_n + quarantine
 				 , data = final_dataset)
 	anova(mod3_c)
+	plot(mod3_c, which = 2)
+	plot(mod3_c, which = 3)
+	# okayish on the assumptions
+	# But it doesn't feel right to use this model
+	
 	# option 2
-	mod3_d <- lm(spc_richness ~ nb_observators + park.area.percentage + Land.area.in.square.kilometres..2016 + quarantine
+	mod3_d <- lm(spc_richness ~ sqrt(nb_observators) + park.area.percentage + Land.area.in.square.kilometres..2016 + quarantine
 				 , data = final_dataset)
 	Anova(mod3_d, type = 3)
+	plot(mod3_d, which = 2)
+	plot(mod3_d, which = 3)
+	# assumptions are okayish
+	# still feel like we should have the cities as a random effect
+
+# TO RECAP HYPO 3 SO FAR:
+	# The models don't really fit what we're trying to say
+	# or the assumptions aren't met
+	# so let's go one step deeper and use a random effect model
 	
 	# what if I wanna do a model with random effect for the cities
-	mod3_e <- nlme::lme(spc_richness ~ nb_observators + park.area.percentage + Land.area.in.square.kilometres..2016 + quarantine
+	mod3_e <- nlme::lme(spc_richness ~ sqrt(nb_observators) + park.area.percentage + Land.area.in.square.kilometres..2016 + quarantine
 						, random = ~1|Ggrphc_n
 						, data = final_dataset)
 	summary(mod3_e)
 	# intercept / intercept + residual gives tot variation coming from cities
-	# 16.6 / (16.6 + 16.5) = 0.5% !!!
+	# 10.2 / (10.2 + 12.2) = 0.45% 
 	# MUST BE A RANDOM EFFECT
 	qqnorm(mod3_e)
 	e <- resid(mod3_e
 			   , type = "normalized")
 	plot(mod3_e$fitted[,"fixed"], e) 
 	
-	# With this model we have 50% variation coming from the cities
+	# With this model we have 45% variation coming from the cities
 	# an effect of the nb of observators
-	# light effect of the quarantine (p = 0.08)
+	# effect of the quarantine very light (p=0.15)
+
+	# Trying to make a plot for this
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness, col=quarantine)) +
+		geom_jitter() + 
+		stat_smooth(method=lm)
+	# can pretty much say that there's not an effect of the quarantine
+	# THIS IS ONLY FOR VISUALIZATING 
+	# You can't plot a model as complicated as the one we have
+	# Or idk how to
+	
+	
 
 # end IV. ----
