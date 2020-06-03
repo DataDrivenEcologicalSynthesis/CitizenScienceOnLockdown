@@ -76,7 +76,10 @@ p.turnover=ggplot(data=spe.change.tot, aes(x=year, y=total, group=city))+
 	facet_wrap(~city)+
 	theme_bw()+
 	theme(legend.position = "none")
+
+png("Figures/Exploratory/MJ_spc_turnover.png", width = 1700, height = 1000, units ="px", res=150)
 p.turnover
+dev.off()
 
 p.appear=ggplot(data=spe.change.tot, aes(x=year, y=appearance, group=city))+
 	geom_point(aes(col=city))+
@@ -85,7 +88,10 @@ p.appear=ggplot(data=spe.change.tot, aes(x=year, y=appearance, group=city))+
 	facet_wrap(~city)+
 	theme_bw()+
 	theme(legend.position = "none")
+
+png("Figures/Exploratory/MJ_spc_appear.png", width = 1700, height = 1000, units ="px", res=150)
 p.appear
+dev.off
 
 # Overall, it seems like species turnover was higher in the earlier day of use of the app, and has decreased since.
 # We do not see a massive change in reported species composition due to quarantine.
