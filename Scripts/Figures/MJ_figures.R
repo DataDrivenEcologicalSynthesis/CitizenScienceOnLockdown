@@ -59,17 +59,6 @@
 	# Get province outlines
 	prov <- ne_states(c("canada"))
 	
-	
-	map.canada=ggplot() + 
-		geom_sf()+
-	#	geom_sf(data = subset(world, name=="Canada"), size = 0.5, color = "grey", fill = "grey")+ 
-		geom_polygon(data = prov, aes(x = long, y = lat, group = group), fill = 'grey') + 
-		geom_sf(data = sites, size = 2, shape = 16, aes(col = Geographic.name)) +
-	#	ggrepel::geom_text_repel(data = sites, aes(x = long, y = lat, label = Geographic.name)) +
-		coord_sf(crs = 4326, xlim=c(-130,-52),ylim=c(42,60))+
-		theme(legend.position = "none")
-	map.canada
-	
 	map.canada=ggplot() + 
 		geom_sf()+
 		#geom_sf(data = subset(world, name=="Canada"), size = 0.5, color = "grey", fill = "grey")+ 
@@ -109,12 +98,10 @@
 		theme(legend.position = "none", axis.title.x=element_blank(), axis.title.y=element_blank())
 	map.quebec
 	
-	jpeg("Figures/Exploratory/CanadaMap.jpg", width = 350, height = 350)
-	# make your plot
-	map.canada
-	# close the plot to save it.
-	dev.off()
-	
+	library("gridExtra")
+	map.canada.cities=grid.arrange(map.canada,                             # First row with one plot spaning over 2 columns
+				 arrangeGrob(map.ontario, map.quebec, ncol = 2), # Second row with 2 plots in 2 different columns
+				 nrow = 2)           
 	
 	#### Get data from Shuang's code to extrat GBIF bird occurrences (finaldata)
 	
