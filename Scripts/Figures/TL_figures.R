@@ -9,6 +9,7 @@ library(viridis)
 library(ggplot2)
 library(ggmap)
 library(osmdata)
+library(nlme)
 
 #---------------------import data--------------------------#
 #inat stuff
@@ -132,3 +133,24 @@ ggmap(hamilton) +
 dev.off()
 #--------------Hypothesis 2----------------#
 #map
+spc.rich.park <- left_join(CityTotal,cities,by=c("city" = "Geographic.name"))
+
+plot(spc.rich.park$spc_richness~spc.rich.park$park.area.percentage)
+
+#linear model between park and species richness
+lm.park <- lm(spc_richness~park.area.percentage,data=spc.rich.park)
+summary(lm.park)
+
+#lm with year as a random effect
+lme.fit <- lme(spc_richness~park.area.percentage,
+			   random=~1|year,
+			   data=spc.rich.park)
+summary(lme.fit)
+
+#lm with city as a random effect
+lme.fit <- lme(spc_richness~park.area.percentage,
+			   random=~1|city,
+			   data=spc.rich.park)
+summary(lme.fit)
+
+
