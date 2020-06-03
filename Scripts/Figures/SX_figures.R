@@ -57,10 +57,10 @@ write.table(inat,"inat.csv",sep=",")
 #for checking all the record with duplicated "id"
 # 
 # 
-#dup<-inat%>% 
-	#group_by(id) %>% 
-#ilter(n() != 1)
-write.table(dup,"dup.csv",sep=",")
+dup<-inat%>% 
+	group_by(id) %>% 
+filter(n() != 1)
+write.table(dup,"Data/dup.csv",sep=",")
 
 #final data with unique id
 inat_identity<-distinct(inat, id, .keep_all= TRUE)
