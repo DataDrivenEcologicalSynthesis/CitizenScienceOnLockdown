@@ -111,7 +111,7 @@ inat1=inat %>%
 	separate(city_year, into=c("Ggrphc_n", "year"), remove=FALSE)
 inat1$n=as.numeric(inat1$n)
 
-inat2=left_join(inat1, city_years)%>%
+inat2=left_join(inat1, city_years)%>% #TL - object not found (city_years), can't run code
 	pivot_wider(id_cols=city_year, names_from=scientific_name, values_from=n)%>%
 	replace(., is.na(.), "0")%>%
 	separate(city_year, into=c("Ggrphc_n", "year"), remove=FALSE)
