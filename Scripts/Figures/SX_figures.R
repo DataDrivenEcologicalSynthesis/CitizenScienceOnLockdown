@@ -64,7 +64,7 @@ write.table(dup,"dup.csv",sep=",")
 
 #final data with unique id
 inat_identity<-distinct(inat, id, .keep_all= TRUE)
-write.table(inat_identity,"inat_identity.csv",sep=",")
+write.table(inat_identity,"Data/inat_identity.csv",sep=",")
 
 ###figures for quality_grade
 inat_clean_observation <- inat_identity%>%
