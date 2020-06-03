@@ -90,6 +90,26 @@
 # end III. ----
 
 # IV. Analysis ----
+# 0. Nb of observers through time ----
+	plot(nb_observators ~ year, data = final_dataset)
+	mod0_a <- nlme::lme(nb_observators ~ year
+						, random = ~1|Ggrphc_n
+						, data = final_dataset)
+	summary(mod0_a)
+	# effect of the year on the nb of observators for sure
+	# 48% of variation explained by the city considered
+	qqnorm(mod0_a)
+	e <- resid(mod0_a
+			   , type = "normalized")
+	plot(mod0_a$fitted[,"fixed"], e) 
+	# assumptions aren't perfect but let's roll with it
+	jpeg("Figures/Hypothesis_1/AS_NObs_LMMCities_colQuarantine.jpg", width = 900, height = 500)
+	ggplot(data=final_dataset, aes(x=year, y=nb_observators, col = quarantine)) +
+		geom_jitter() + 
+		stat_smooth(method=lm)+
+		facet_wrap(~as.factor(Ggrphc_n))
+	dev.off()
+	
 # A. Hypothesis 1 ----
 	plot(spc_richness ~ nb_observators, data = final_dataset)
 	# we can see a relation but it's not linear
