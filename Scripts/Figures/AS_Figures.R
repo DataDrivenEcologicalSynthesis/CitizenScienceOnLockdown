@@ -285,6 +285,11 @@
 		stat_smooth(method=lm) +
 		facet_wrap(~as.factor(Ggrphc_n))
 	dev.off()
-	
+	jpeg("Figures/Hypothesis_3/AS_LMCities_SqrtObs_richness_facet_colQuarantine.jpg", width = 900, height = 500)
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness)) +
+		geom_jitter(aes(col=quarantine)) + 
+		stat_smooth(method=lm) +
+		facet_wrap(~as.factor(Ggrphc_n))
+	dev.off()
 
 # end IV. ----
