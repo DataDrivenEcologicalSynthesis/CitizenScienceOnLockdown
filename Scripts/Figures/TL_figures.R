@@ -10,6 +10,7 @@ library(ggplot2)
 library(ggmap)
 library(osmdata)
 library(nlme)
+library(reshape2)
 
 #---------------------import data--------------------------#
 #inat stuff
@@ -153,4 +154,11 @@ lme.fit <- lme(spc_richness~park.area.percentage,
 			   data=spc.rich.park)
 summary(lme.fit)
 
+#--------------species abundance-----------------#
+abund.year <- dcast(inat, scientific_name~year, fun.aggregate = length, 
+					value.var = "scientific_name") %>%
+				melt(id.vars="scientific_name",measure.vars=c("2016","2017","2018","2019","2020"))
 
+ggplot(abund.year, aes(value)) + 
+	geom_histogram() +
+	facet_wrap(abund.year$variable)
