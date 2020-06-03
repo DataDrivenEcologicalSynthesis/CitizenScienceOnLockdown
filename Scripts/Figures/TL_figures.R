@@ -6,6 +6,9 @@
 library(tidyverse)
 library(sf)
 library(viridis)
+library(ggplot2)
+library(ggmap)
+library(osmdata)
 
 #---------------------import data--------------------------#
 #inat stuff
@@ -52,8 +55,6 @@ ggplot(data = CityTotal) +
 	facet_wrap(~as.factor(Ggrphc_n))
 dev.off()
 
-
-
 #Toronto
 toronto <- get_map(location=c(left=city.box$xmin[1],bottom=city.box$ymin[1],
 							  right=city.box$xmax[1],top=city.box$ymax[1]), 
@@ -76,5 +77,58 @@ ggmap(toronto) +
 	scale_color_viridis(discrete=TRUE,option="plasma")
 dev.off()
 
+#saskatoon
+saskatoon <- get_map(location=c(left=city.box$xmin[19],bottom=city.box$ymin[19],
+							  right=city.box$xmax[19],top=city.box$ymax[19]), 
+				   maptype = "roadmap", color="bw")
+saskatoon_data <- sf::st_intersection(inat.shp, city.boundaries[19,])
+saskatoon_boundary <- st_transform(city.boundaries[19,],crs=4326)
+
+park <-  c(city.box$xmin[19],city.box$ymin[19],
+		   city.box$xmax[19],city.box$ymax[19]) %>%
+	opq() %>%
+	add_osm_feature("leisure","park") %>%
+	osmdata_sf(quiet=F)	
+saskatoon_parks.p <- park$osm_polygons %>% st_transform(crs=4328)
+saskatoon_parks.m <- park$osm_multipolygons %>% st_transform(crs=4328)
+
+png("Figures/Exploratory/TL_saskatoon_map.png", width = 2000, height = 1700, units ="px", res=300)
+ggmap(saskatoon) +
+	geom_sf(data=city.boundaries$geometry[19],inherit.aes = FALSE, 
+			color="red", fill="transparent", size=1) +
+	geom_sf(data=saskatoon_parks.p, inherit.aes = FALSE,
+			color="transparent", fill="forestgreen") +
+	geom_sf(data=saskatoon_parks.m, inherit.aes = FALSE,
+			color="transparent", fill="forestgreen") +
+	geom_sf(data=saskatoon_data, inherit.aes = FALSE, size=0.5, aes(color=factor(year))) +
+	scale_color_viridis(discrete=TRUE,option="plasma")
+dev.off()
+
+#hamilton
+hamilton <- get_map(location=c(left=city.box$xmin[10],bottom=city.box$ymin[10],
+								right=city.box$xmax[10],top=city.box$ymax[10]), 
+					 maptype = "roadmap", color="bw")
+hamilton_data <- sf::st_intersection(inat.shp, city.boundaries[10,])
+hamilton_boundary <- st_transform(city.boundaries[10,],crs=4326)
+
+park <-  c(city.box$xmin[10],city.box$ymin[10],
+		   city.box$xmax[10],city.box$ymax[10]) %>%
+	opq() %>%
+	add_osm_feature("leisure","park") %>%
+	osmdata_sf(quiet=F)	
+hamilton_parks.p <- park$osm_polygons %>% st_transform(crs=4328)
+hamilton_parks.m <- park$osm_multipolygons %>% st_transform(crs=4328)
+
+png("Figures/Exploratory/TL_hamilton_map.png", width = 2000, height = 1700, units ="px", res=300)
+ggmap(hamilton) +
+	geom_sf(data=city.boundaries$geometry[10],inherit.aes = FALSE, 
+			color="red", fill="transparent", size=1) +
+	geom_sf(data=hamilton_parks.p, inherit.aes = FALSE,
+			color="transparent", fill="forestgreen") +
+	geom_sf(data=hamilton_parks.m, inherit.aes = FALSE,
+			color="transparent", fill="forestgreen") +
+	geom_sf(data=hamilton_data, inherit.aes = FALSE, size=0.5, aes(color=factor(year))) +
+	scale_color_viridis(discrete=TRUE,option="plasma")
+dev.off()
 #--------------Hypothesis 2----------------#
 #map
