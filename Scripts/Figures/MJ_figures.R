@@ -1,3 +1,136 @@
+
+# 1. Exploring the data
+
+# 1.1. Creating a map of canada with the 20 cities selected shown. 
+	# Open useful libraries
+	library(maps)
+	library(mapdata)
+	library(mapproj)
+	library(stringr)
+	install.packages("rnaturalearthhires", repos = "http://packages.ropensci.org", type = "source")
+	library(rnaturalearthhires)
+# 1.1.1
+	# Import city data
+	setwd("~/My documents/CitizenScienceOnLockdown/Data")
+	cities_info <- read.csv("02_cities_pop_park.csv")
+
+	# canada.cities (from package maps) includes the coordinates of all Canadian cities with pop >1000
+	ocanada=canada.cities	
+	ocanada$name=str_sub(canada.cities$name, end=-4)
+
+	ocanada2=ocanada%>%
+		mutate(name = plyr::revalue(name, c("OTTAWA"="Ottawa", "Mississauga Beach"="Mississauga")))
+	ocanada2$name
+
+	# Ah this dataset is missing a few. Missing Brampton, Laval, Surrey ,Markham, Vaughan, Gatineau, Longueuil
+	# Apparently is hates suburbs
+	
+	# Add the missing cities and their approx. coordinates
+	missing.names=c("Brampton", "Laval", "Surrey" ,"Markham", "Vaughan", "Gatineau", "Longueuil")
+   	missing.country.etc=c("ON", "QC", "BC", "ON", "ON", "QC", "QC")
+   	missing.pop=c(rep("NA", 7))
+   	missing.lat=c(43.73, 45.61, 49.19, 43.86, 43.85, 45.48, 45.54)
+   	missing.long=c(-79.76, -73.71, -122.85, -79.34, -79.51, -75.70, -73.51)
+	missing.capital=c(rep(0,7))
+	
+	missing.cities=data.frame(cbind(missing.names,missing.country.etc, missing.pop, missing.lat,missing.long,missing.capital))
+	colnames(missing.cities)=c(names(ocanada2))
+	
+	ocanada3=rbind(ocanada2, missing.cities)
+	
+	# Merge the cities detailed info with their coordinates
+	cities_all=left_join(cities_info, ocanada3, by=c("Geographic.name"= "name"))
+
+# 1.1.2
+	```{r}
+	library(raster)
+	library(mapproj)
+	library(rnaturalearth)
+	library(rnaturalearthdata)
+	library(rgeos)
+	library(sf)
+	library(rgeos)
+
+	theme_set(theme_bw())
+	sites <- st_as_sf(cities_all, coords = c("long", "lat"), 
+					  crs = 4326, agr = "constant", remove = FALSE) 
+	
+	#sites=cbind(sites, cities_all$long, cities_all$lat)
+	# Get province outlines
+	prov <- ne_states(c("canada"))
+	
+	
+	map.canada=ggplot() + 
+		geom_sf()+
+	#	geom_sf(data = subset(world, name=="Canada"), size = 0.5, color = "grey", fill = "grey")+ 
+		geom_polygon(data = prov, aes(x = long, y = lat, group = group), fill = 'grey') + 
+		geom_sf(data = sites, size = 2, shape = 16, aes(col = Geographic.name)) +
+	#	ggrepel::geom_text_repel(data = sites, aes(x = long, y = lat, label = Geographic.name)) +
+		coord_sf(crs = 4326, xlim=c(-130,-52),ylim=c(42,60))+
+		theme(legend.position = "none")
+	map.canada
+	
+	map.canada=ggplot() + 
+		geom_sf()+
+		#geom_sf(data = subset(world, name=="Canada"), size = 0.5, color = "grey", fill = "grey")+ 
+		geom_polygon(data = prov, aes(x = long, y = lat, group = group), fill = 'grey') + 
+		geom_sf(data = sites, size = 2, shape = 16, aes(col = Geographic.name)) +
+		geom_rect(aes(xmin=-80, xmax=-78.8, ymin=43.1, ymax=44), color="black", fill=NA)+
+		geom_rect(aes(xmin=-76, xmax=-73, ymin=45, ymax=46.5), color="black", fill=NA)+
+		geom_text_repel(data = filter(sites, Geographic.name %in% c("Vancouver", "Surrey", "Edmonton",
+			"Calgary", "Saskatoon", "Winnipeg", "Halifax", "Quebec")), 
+			aes(x = as.numeric(long), y = as.numeric(lat), label = Geographic.name), 
+			xlim=c(-130,-52),ylim=c(42,60),point.padding = 0.5) +
+		coord_sf(crs = 4326, xlim=c(-130,-52),ylim=c(42,60))+
+		theme(legend.position = "none", axis.title.x=element_blank(), axis.title.y=element_blank())
+	map.canada
+	
+	map.ontario=ggplot() + 
+		geom_sf()+
+		#geom_sf(data = subset(world, name=="Canada"), size = 0.5, color = "grey", fill = "grey")+ 
+		geom_polygon(data = prov, aes(x = long, y = lat, group = group), fill = 'grey') + 
+		geom_sf(data = sites, size = 2, shape = 16, aes(col = Geographic.name)) +
+		geom_text_repel(data = filter(sites, Geographic.name %in% c("Toronto", "Markham", "Vaughan","Brampton", "Mississauga", "Hamilton")), 
+						aes(x = as.numeric(long), y = as.numeric(lat), label = Geographic.name), 
+						xlim=c(-80,-78.8),ylim=c(43.1,44)) +
+		coord_sf(crs = 4326, xlim=c(-80,-78.8),ylim=c(43.1,44))+
+		theme(legend.position = "none", axis.title.x=element_blank(), axis.title.y=element_blank())
+	map.ontario
+	
+	map.quebec=ggplot() + 
+		geom_sf()+
+		#geom_sf(data = subset(world, name=="Canada"), size = 0.5, color = "grey", fill = "grey")+ 
+		geom_polygon(data = prov, aes(x = long, y = lat, group = group), fill = 'grey') + 
+		geom_sf(data = sites, size = 2, shape = 16, aes(col = Geographic.name)) +
+		geom_text_repel(data = filter(sites, Geographic.name %in% c("Ottawa", "Gatineau", "Laval", "Montreal", 'Longueuil')), 
+						aes(x = as.numeric(long), y = as.numeric(lat), label = Geographic.name), 
+						xlim=c(-76,-73),ylim=c(45,46.5)) +
+		coord_sf(crs = 4326, xlim=c(-76,-73),ylim=c(45,46.5))+
+		theme(legend.position = "none", axis.title.x=element_blank(), axis.title.y=element_blank())
+	map.quebec
+	
+	jpeg("Figures/Exploratory/CanadaMap.jpg", width = 350, height = 350)
+	# make your plot
+	map.canada
+	# close the plot to save it.
+	dev.off()
+	
+	
+	#### Get data from Shuang's code to extrat GBIF bird occurrences (finaldata)
+	
+	The coordinate data from iNaturalist downlaoded thriough GBIF was in degree decimals, which is usually WGS84 for the projection. Its number is 4326. If we decide to switch how to import data at some point that is something to look at. 
+	```{r}
+	sites <- st_as_sf(finaldata, coords = c("decimalLongitude", "decimalLatitude"), 
+					  crs = 4326, agr = "constant") 
+	plot(sites) # it understands that it's a geographic system
+	
+	ggplot() +
+		geom_sf(data = sites, size = 1, shape = 23, fill = "slateblue4") +   
+		geom_sf(data = CMA_boundaries_red, size = 1, color = "cyan", fill=NA)
+	
+	# Now both can be read in the same map. Try to proceed with clipping the data.   
+
+################################################################################
 # Generating figures related to hypothesis 2
 # Are we observing different species because the cities are quieter?
 
@@ -10,9 +143,7 @@ library(car)
 library(cowplot)
 library(magrittr)
 library(vegan)
-install.packages("remotes")
-remotes::install_github("jfq3/QsRutils")
-library(jfq3/QsRutils)
+library(fuzzySim)
 
 # Importing datasets - Based on Aliénor's AS_Figrues.R code
 cities_info <- read.csv("Data/02_cities_pop_park.csv")
@@ -92,9 +223,11 @@ p.appear
 # No clear trend emerge for the appearance of new species being reported between cities. It's very variable. 
 
 ############################################################################
-# Species composition
-# Create an observed community composition table
-# This table needs to have cities and years (2019 and 2020 only) as rows, species as columns and number of observations in values
+############################################################################
+############################################################################
+# Species composition 
+# Create an observed presence-absence table
+# This table needs to have cities and years (2019 and 2020 only) as rows, species as columns and 0-1 in values
 # The rationale for not doing it by year is to simplify the plot at the end and deal with missing data (missing 6 city x year combos)
 
 inat1=inat %>%
@@ -105,7 +238,7 @@ inat1=inat %>%
 	separate(city_year, into=c("Ggrphc_n", "year"), remove=FALSE)
 inat1$n=as.numeric(inat1$n)
 
-inat2=left_join(inat1, city_years)%>%
+inat2=inat1%>%
 	pivot_wider(id_cols=city_year, names_from=scientific_name, values_from=n)%>%
 	replace(., is.na(.), "0")%>%
 	separate(city_year, into=c("Ggrphc_n", "year"), remove=FALSE)
@@ -118,7 +251,6 @@ inat2$city_year=as.factor(inat2$city_year)
 inat3=inat2 %>%
 	mutate_if(is.character,as.numeric)
 str(inat3)
-
 inat4=inat3[,4:357]
 
 # Multivariate anova per permutation of the observed community to test for year effect (city as a random effect)
@@ -200,3 +332,258 @@ nmds.plot.spe=nmds.plot+
 	ggrepel::geom_text_repel(data = sig.spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+ #add labels for  species, use ggrepel::geom_text_repel so that labels do not overlap
 	scale_alpha(guide = 'none')
 nmds.plot.spe
+
+############################################################################
+############################################################################
+############################################################################
+# Species composition 
+# Create an observed presence-absence table
+# This table needs to have cities and years (2019 and 2020 only) as rows, species as columns and 0-1 in values
+# The rationale for not doing it by year is to simplify the plot at the end and deal with missing data (missing 6 city x year combos)
+
+inat1=inat %>%
+	select(Ggrphc_n, year, scientific_name)%>%
+	filter(year %in% c(2019, 2020))%>%
+	unite(col="city_year", Ggrphc_n, year, sep = "_", remove=FALSE)%>%
+	count(city_year, scientific_name)%>%	# This generates the number of reports of a species in a city per year
+	separate(city_year, into=c("Ggrphc_n", "year"), remove=FALSE)
+inat1$n=as.numeric(inat1$n)
+
+inat2=inat1%>%
+	pivot_wider(id_cols=city_year, names_from=scientific_name, values_from=n)%>%
+	replace(., is.na(.), "0")%>%
+	separate(city_year, into=c("Ggrphc_n", "year"), remove=FALSE)
+
+# Convert to factors or integers
+inat2$Ggrphc_n=as.factor(inat2$Ggrphc_n)
+inat2$year=as.integer(inat2$year)
+inat2$city_year=as.factor(inat2$city_year)
+
+inat3=inat2 %>%
+	mutate_if(is.character,as.numeric)
+str(inat3)
+inat4=inat3[,4:357]
+
+############################################################################
+############################################################################
+
+# Multivariate anova per permutation of the observed community to test for year effect (city as a random effect)
+spe.bray=vegdist(inat3[,4:357], method="bray") # create distance matrix
+
+spe.adonis<- adonis(formula = spe.bray ~ as.factor(inat3$year), strata=inat3$Ggrphc_n,
+					data = inat3, 
+					perm = 5000) # no strata
+spe.adonis # Significant year effect in sp composition when cities are used as random effect
+
+# Now let's use a non-metric multidimentional scaling ordination to visualise the results
+
+###Run the NMDS with two dimensions.  ###
+set.seed(5) # random number selected to get repeatable results
+
+spe.nmds <- metaMDS(spe.bray, k = 2, trymax = 500) # the 3 dimensions is a better fit, but we will use 2 dimensions for the project
+# Our interpretation is likely to focus on axes 1 and 2 though
+spe.nmds$stress # stress of 0.12 
+stressplot(spe.nmds)
+
+#Plot the NMDS using ggplot2
+
+spp.fit <- envfit(spe.nmds, inat4, permutations = 999) # this fits species vectors
+site.scrs <- as.data.frame(scores(spe.nmds, display = "sites")) #save NMDS results into dataframe
+# Add gps coordinates and site depth to the scores
+#gps.bda=gps.sites%>%
+#	filter(!Sites %in% c("LA05", "LA06"))
+site.scrs <- cbind(site.scrs, inat3[1:3]) 
+
+site.scrs$Ggrphc_n <- factor(site.scrs$Ggrphc_n, levels = c("Vancouver","Surrey", "Calgary","Edmonton", "Saskatoon",
+															"Winnipeg","London","Hamilton", "Brampton", "Mississauga",
+															"Toronto", "Markham","Vaughan", "Ottawa", "Gatineau" , "Laval" , 
+															"Montreal","Longueuil",  "Quebec",  "Halifax"))
+
+#Prep species data
+spp.scrs <- as.data.frame(scores(spp.fit, display = "vectors")) #save species intrinsic values into dataframe
+spp.scrs <- cbind(spp.scrs, Species = rownames(spp.scrs)) #add species names to dataframe
+spp.scrs <- cbind(spp.scrs, pval = spp.fit$vectors$pvals) #add pvalues to dataframe so you can select species which are significant
+#spp.scrs<- cbind(spp.scrs, abrev = abbreviate(spp.scrs$Species, minlength = 6)) #abbreviate species names
+sig.spp.scrs <- subset(spp.scrs, pval<=0.001) #subset data to show species significant at 0.1
+#Basic plot with ggplot2. Colors represent cities
+#Code obtained from https://www.rpubs.com/RGrieger/545184
+write.csv(sig.spp.scrs, 'sig.spp.scrs.csv')
+
+# Generate standard deviation ellipses
+NMDS = data.frame(MDS1 = spe.nmds$points[,1], MDS2 = spe.nmds$points[,2],group=as.factor(inat3$year))
+NMDS.mean=aggregate(NMDS[,1:2],list(group=NMDS$group),mean)
+veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
+{
+	theta <- (0:npoints) * 2 * pi/npoints
+	Circle <- cbind(cos(theta), sin(theta))
+	t(center + scale * t(Circle %*% chol(cov)))
+}
+
+df_ell <- data.frame()
+for(g in levels(NMDS$group)){
+	df_ell <- rbind(df_ell, cbind(as.data.frame(with(NMDS[NMDS$group==g,],
+													 veganCovEllipse(cov.wt(cbind(MDS1,MDS2),wt=rep(1/length(MDS1),length(MDS1)))$cov,center=c(mean(MDS1),mean(MDS2)))))
+								  ,group=g))
+}
+site.scrs$year=as.factor(site.scrs$year)
+
+# Plot the NMDS
+nmds.plot <- ggplot(site.scrs, aes(x=NMDS1, y=NMDS2))+ #sets up the plot
+	geom_path(data=df_ell, aes(x=MDS1, y=MDS2,colour=group), size=1, linetype=1, show.legend = F)+
+	geom_point(aes(NMDS1, NMDS2, colour = site.scrs$Ggrphc_n,fill=site.scrs$Ggrphc_n, shape=year), size = 3)+ #adds site points to plot, colour determined by Depth
+	annotate("text",x=NMDS.mean$MDS1,y=NMDS.mean$MDS2,label=NMDS.mean$group)+
+	theme_bw()+ 
+	labs(colour = "Cities")+ # add legend labels for Management and Landuse
+	scale_shape_manual(values=c(1,19))+
+	theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10))+ # add legend at right of plot
+	theme(panel.background = element_rect(fill = NA, colour = "black", size = 1, linetype = "solid"))+ 
+	guides(fill=FALSE)
+nmds.plot
+
+#Adding the species correlated with site positionning in ordination space at p<0.0005
+# Aaaahhhh so all species are more abundant in 2020 when showing p<0.05 there are too many
+nmds.plot.spe=nmds.plot+
+	geom_segment(data = sig.spp.scrs, aes(x = 0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd=0.3) + #add vector arrows of  species significant at alpha=0.05
+	ggrepel::geom_text_repel(data = sig.spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+ #add labels for  species, use ggrepel::geom_text_repel so that labels do not overlap
+	scale_alpha(guide = 'none')
+nmds.plot.spe
+
+################################################# #################################################
+################################################# #################################################
+################################################# #################################################
+# Species presence-absence 
+# Create an observed presence-absence table
+# This table needs to have cities and years (2019 and 2020 only) as rows, species as columns and 0-1 in values
+# The rationale for not doing it by year is to simplify the plot at the end and deal with missing data (missing 6 city x year combos)
+
+inat1=inat %>%
+	select(Ggrphc_n, year, scientific_name)%>%
+	filter(year %in% c(2019, 2020))%>%
+	unite(col="city_year", Ggrphc_n, year, sep = "_", remove=FALSE)%>%
+	count(city_year, scientific_name)%>%	# This generates the number of reports of a species in a city per year
+	separate(city_year, into=c("Ggrphc_n", "year"), remove=FALSE)%>%
+	droplevels()
+inat1$n=as.numeric(inat1$n)
+
+inat_pres=splist2presabs(inat1, sites.col="city_year", sp.col="scientific_name", keep.n=FALSE)
+
+inat_PA=inat_pres%>%
+	separate(city_year, into=c("Ggrphc_n", "year"), remove=FALSE)
+
+# Convert to factors or integers
+inat_PA$Ggrphc_n=as.factor(inat_PA$Ggrphc_n)
+inat_PA$year=as.integer(inat_PA$year)
+inat_PA$city_year=as.factor(inat_PA$city_year)
+
+dim(inat_PA)
+
+# Multivariate anova per permutation of the observed community to test for year effect (city as a random effect)
+spe.jac=vegdist(inat_PA[,4:357], method="jaccard", binary=TRUE) # create distance matrix
+
+spe.adonis.2<- adonis(formula = spe.jac ~ as.factor(inat_PA$year), strata=inat_PA$Ggrphc_n,
+					data = inat_PA, 
+					perm = 5000) # no strata
+spe.adonis.2 # Significant year effect in sp composition when cities are used as random effect
+
+# Now let's use a non-metric multidimentional scaling ordination to visualise the results
+
+###Run the NMDS with two dimensions.  ###
+set.seed(5) # random number selected to get repeatable results
+
+spe.nmds.2 <- metaMDS(spe.jac, k = 2, trymax = 500) # the 3 dimensions is a better fit, but we will use 2 dimensions for the project
+# Our interpretation is likely to focus on axes 1 and 2 though
+spe.nmds.2$stress # stress of 0.19 -ie not great 
+stressplot(spe.nmds.2)
+
+#Plot the NMDS using ggplot2
+
+spp.fit2 <- envfit(spe.nmds.2, inat_PA, permutations = 999) # this fits species vectors
+site.scrs2 <- as.data.frame(scores(spe.nmds.2, display = "sites")) #save NMDS results into dataframe
+# Add gps coordinates and site depth to the scores
+#gps.bda=gps.sites%>%
+#	filter(!Sites %in% c("LA05", "LA06"))
+site.scrs2 <- cbind(site.scrs2, inat_PA[1:3]) 
+
+#Prep species data
+spp.scrs2 <- as.data.frame(scores(spp.fit2, display = "vectors")) #save species intrinsic values into dataframe
+spp.scrs2 <- cbind(spp.scrs2, Species = rownames(spp.scrs2)) #add species names to dataframe
+spp.scrs2 <- cbind(spp.scrs2, pval = spp.fit2$vectors$pvals) #add pvalues to dataframe so you can select species which are significant
+#spp.scrs<- cbind(spp.scrs, abrev = abbreviate(spp.scrs$Species, minlength = 6)) #abbreviate species names
+sig.spp.scrs2 <- subset(spp.scrs2, pval<=0.001) #subset data to show species significant at 0.1
+#Basic plot with ggplot2. Colors represent cities
+#Code obtained from https://www.rpubs.com/RGrieger/545184
+
+# Generate standard deviation ellipses
+NMDS = data.frame(MDS1 = spe.nmds.2$points[,1], MDS2 = spe.nmds.2$points[,2],group=as.factor(inat_PA$year))
+NMDS.mean=aggregate(NMDS[,1:2],list(group=NMDS$group),mean)
+veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
+{
+	theta <- (0:npoints) * 2 * pi/npoints
+	Circle <- cbind(cos(theta), sin(theta))
+	t(center + scale * t(Circle %*% chol(cov)))
+}
+
+df_ell <- data.frame()
+for(g in levels(NMDS$group)){
+	df_ell <- rbind(df_ell, cbind(as.data.frame(with(NMDS[NMDS$group==g,],
+													 veganCovEllipse(cov.wt(cbind(MDS1,MDS2),wt=rep(1/length(MDS1),length(MDS1)))$cov,center=c(mean(MDS1),mean(MDS2)))))
+								  ,group=g))
+}
+site.scrs2$year=as.factor(site.scrs2$year)
+site.scrs2$Ggrphc_n <- factor(site.scrs2$Ggrphc_n, levels = c("Vancouver","Surrey", "Calgary","Edmonton", "Saskatoon",
+															  "Winnipeg","London","Hamilton", "Brampton", "Mississauga",
+															  "Toronto", "Markham","Vaughan", "Ottawa", "Gatineau" , "Laval" , 
+															  "Montreal","Longueuil",  "Quebec",  "Halifax"))
+# Plot the NMDS
+nmds.plot.2 <- ggplot(site.scrs2, aes(x=NMDS1, y=NMDS2))+ #sets up the plot
+	geom_path(data=df_ell, aes(x=MDS1, y=MDS2,colour=group), size=1, linetype=1, show.legend = F)+
+	geom_point(aes(NMDS1, NMDS2, colour = site.scrs2$Ggrphc_n,fill=site.scrs2$Ggrphc_n, shape=year), size = 3)+ #adds site points to plot, colour determined by Depth
+	annotate("text",x=NMDS.mean$MDS1,y=NMDS.mean$MDS2,label=NMDS.mean$group)+
+	theme_bw()+ 
+	labs(colour = "Cities")+ # add legend labels for Management and Landuse
+	scale_shape_manual(values=c(1,19))+
+	theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10))+ # add legend at right of plot
+	theme(panel.background = element_rect(fill = NA, colour = "black", size = 1, linetype = "solid"))+ 
+	guides(fill=FALSE)
+nmds.plot.2
+
+#Adding the species correlated with site positionning in ordination space at p<0.0005
+# Aaaahhhh so all species are more abundant in 2020 when showing p<0.05 there are too many
+nmds.plot.spe.2=nmds.plot.2+
+	geom_segment(data = sig.spp.scrs2, aes(x = 0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd=0.3) + #add vector arrows of  species significant at alpha=0.05
+	ggrepel::geom_text_repel(data = sig.spp.scrs2, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+ #add labels for  species, use ggrepel::geom_text_repel so that labels do not overlap
+	scale_alpha(guide = 'none')
+nmds.plot.spe.2
+
+###################################################################
+# Yes the pre-quarantine species list and compare with quarantine species list
+###################################################################
+library(labdsv)
+#####################################################################################################
+# Indicator species analysis with a focus on Toronto, Ottawa and Calgary
+# These are all large cities that have had large number of observations over the years and are more likely to have reacted fast
+
+inat1=inat %>%
+	select(Ggrphc_n, year, scientific_name)%>%
+	filter(Ggrphc_n %in% c("Toronto", "Ottawa", "Calgary"))%>%
+	unite(col="city_year", Ggrphc_n, year, sep = "_", remove=FALSE)%>%
+	count(city_year, scientific_name)%>%	# This generates the number of reports of a species in a city per year
+	separate(city_year, into=c("Ggrphc_n", "year"), remove=FALSE)
+inat1$n=as.numeric(inat1$n)
+
+inat2=inat1%>%
+	pivot_wider(id_cols=city_year, names_from=scientific_name, values_from=n)%>%
+	replace(., is.na(.), "0")%>%
+	separate(city_year, into=c("Ggrphc_n", "year"), remove=FALSE)
+
+# Convert to factors or integers
+inat2$Ggrphc_n=as.factor(inat2$Ggrphc_n)
+inat2$year=as.integer(inat2$year)
+inat2$city_year=as.factor(inat2$city_year)
+
+inat3=inat2 %>%
+	mutate_if(is.character,as.numeric)
+dim(inat3)
+inat4=inat3[,4:290]
+# Export a table of indicator species calculated for all years. Only 2019 (4) and 2020 (5) had indicator species (taxa) based on 
+# occurrence records. -> I can't find an easy way to export this table in a csv form. 
