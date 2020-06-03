@@ -3,6 +3,7 @@
 # INIT ----
 # INIT ----
 rm(list = ls())
+
 install.packages("vegan")
 install.packages("fuzzySim")
 install.packages("fossil")
@@ -40,6 +41,7 @@ data(rotifier)
 	abline(0, 1)
 	rarecurve(rare, step = 20, sample = raremax, col = "blue", cex = 0.6)
 biodiversity<-inat_clean_rarefaction
+
 # end INIT ----
 
 # I. Importing datasets ----
@@ -63,6 +65,7 @@ write.table(dup,"dup.csv",sep=",")
 #final data with unique id
 inat_identity<-distinct(inat, id, .keep_all= TRUE)
 write.table(inat_identity,"inat_identity.csv",sep=",")
+
 ###figures for quality_grade
 inat_clean_observation <- inat_identity%>%
 	dplyr::group_by(Ggrphc_n, year,quality_grade) %>%
@@ -111,6 +114,7 @@ inat_clean_time<- inat_identity%>%
 	dplyr::summarise(spc_richness = length(unique(scientific_name))
 					 , nb_observations = length(user_login)
 					 , nb_observators = length(unique(user_login)))
+
 inat_clean_timenew<- inat_identity%>%
 	mutate(observed_on = as.Date(observed_on))%>%
 
@@ -127,6 +131,7 @@ jpeg("Figures/Hypothesis_1/SX_timeym_observationnew.jpg", width = 1000, height =
 ggplot(inat_clean_timenewnew, aes(x =observed_on, y = nb_observations,group=1)) +
 	geom_line(aes(color=Ggrphc_n)) +
 	facet_wrap(~year)+
+
 	theme_classic()+
 	theme(axis.text.x=element_text(angle=60, hjust=1)) 
 dev.off()
@@ -145,4 +150,5 @@ ggplot(inat_clean_time, aes(x =ym, y = spc_richness,group=1)) +
 	facet_wrap(~Ggrphc_n)+
 	theme_classic()+
 	theme(axis.text.x=element_text(angle=60, hjust=1)) 
+
 dev.off()

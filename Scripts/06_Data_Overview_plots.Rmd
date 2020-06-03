@@ -1,0 +1,119 @@
+---
+title: "Data overview plots"
+author: "Mélanie Jean"
+date: "5/30/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Open useful libraries. 
+```{r}
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("cowplot")) install.packages("cowplot")
+if(!require("ggrepel")) install.packages("ggrepel")
+
+```
+
+Import data
+```{r}
+iNat=read.table("../Data//04_Inat_from_clipping_NoDuplicates-csv.tsv",quote= "\"", fill=T, sep='\t',comment.char = "", na.strings=c("NA", ""), header=T)
+```
+Some observations from the variable 'city' for Ottawa are in Ontario and some are in Quebec. Same for Gatineau. The issue is resolved when using the variable Ggrphc_n instead. 
+
+Plot observations by city x year to see whether the cities we selected actually use iNat. 
+```{r}
+CityTotal=iNat%>%
+# mutate(Ggrphc_n = plyr::revalue(Ggrphc_n, c("Montreal"="Montreal")))%>%
+ group_by(Prvnc__, Ggrphc_n, year)%>%
+  count()
+
+CityTotal$Province=as.factor(CityTotal$Prvnc__)
+
+CityTotal$city=as.factor(CityTotal$Ggrphc_n)
+CityTotal$city <- factor(CityTotal$Ggrphc_n, levels = c("Vancouver","Surrey", "Calgary","Edmonton", "Saskatoon","Winnipeg","London","Hamilton", "Brampton", "Mississauga","Toronto", "Markham","Vaughan", "Ottawa", "Gatineau" , "Laval" , "Montreal","Longueuil",  "Quebec",  "Halifax"))
+```
+Plot with different colors for different provinces. Quebec-blue, alberta-yellow, bc-green. 
+-> Weird some Ottawa and Gatineau observations are in the wrong province...
+```{r}
+p=ggplot(data=CityTotal, aes(x=year, y=n))+
+	geom_bar(stat="identity", aes(fill=as.factor(Province)))+
+	facet_wrap(~as.factor(city))+
+	scale_y_continuous(name="Observation counts")+
+	scale_fill_manual(name="Province", values=c("#F8766D","#FB61D7","#53B400","#A58AFF", "#00C094" ,"#00B6EB",  "#C49A00"))+
+    theme_bw()
+p
+
+#00C094 teal
+#FB61D7 pink
+#F8766D coral
+#53B400 green
+#C49A00 yellow-ish
+#A58AFF purple
+#00B6EB blue
+```
+
+Import population data
+```{r}
+<<<<<<< HEAD
+Pop20=read.csv("../Data//01_Population_top20.csv", header=T)
+=======
+Pop20=read.csv("../Data/01_Population_top20.csv", header=T)
+>>>>>>> b5a1100d3fb062eb3c53e795a36ec48d7788b26e
+
+```
+Add population total and density to the city total table. 
+```{r}
+levels(CityTotal$Ggrphc_n)
+
+Pop20.cols=Pop20%>%
+  select(Geographic.name, Population..2016, Population.density.per.square.kilometre..2016)%>%
+  rename(Ggrphc_n=Geographic.name) #Change the column names for something more manageable
+
+CityTotal2=left_join(CityTotal, Pop20.cols)
+
+CityTotal2$Observations_capita=CityTotal2$n/CityTotal2$Population..2016
+
+CityTotal2$Ggrphc_n <- factor(CityTotal$Ggrphc_n, levels = c("Vancouver","Surrey", "Calgary","Edmonton", "Saskatoon","Winnipeg","London","Hamilton", "Brampton", "Mississauga","Toronto", "Markham","Vaughan", "Ottawa", "Gatineau" , "Laval" , "Montreal","Longueuil",  "Quebec",  "Halifax"))
+
+<<<<<<< HEAD
+```
+=======
+CityTotal2$city <- factor(CityTotal2$city, levels = c("Vancouver","Surrey", "Calgary","Edmonton", "Saskatoon","Winnipeg","London","Hamilton", "Brampton", "Mississauga","Toronto", "Markham","Vaughan", "Ottawa", "Gatineau" , "Laval" , "Montreal","Longueuil",  "Quebec",  "Halifax"))
+>>>>>>> b5a1100d3fb062eb3c53e795a36ec48d7788b26e
+
+Plot the number of observations per 1000 habitants. 
+```{r}
+p2=ggplot(data=CityTotal2, aes(x=year, y=Observations_capita*1000))+
+  geom_bar(stat="identity", aes(fill=as.factor(Province)))+
+  facet_wrap(~as.factor(Ggrphc_n))+
+  scale_y_continuous(name="Observations per 1000 people")+
+	scale_fill_manual(name="Province", values=c("#F8766D","#FB61D7","#53B400","#A58AFF", "#00C094" ,"#00B6EB",  "#C49A00"))+
+  theme_bw()+
+ theme(legend.position = "none")
+p2
+```
+
+```{r}
+p3=ggplot(data=subset(CityTotal2, year==2020), aes(x=Population.density.per.square.kilometre..2016, y=n))+
+  geom_point(aes(color=as.factor(Province)), cex=3)+
+  scale_y_continuous(name="Number of observations in 2020")+
+	scale_color_manual(name="Province", values=c("#F8766D","#FB61D7","#53B400","#A58AFF", "#00C094" ,"#00B6EB",  "#C49A00"))+
+  theme_bw()+
+		geom_text_repel(aes(x=Population.density.per.square.kilometre..2016, y=n, label=as.factor(Ggrphc_n)))+
+ theme(legend.position = "none")
+p3
+
+p4=ggplot(data=subset(CityTotal2, year==2020), aes(x=Population.density.per.square.kilometre..2016, y=Observations_capita*1000))+
+  geom_point(aes(color=as.factor(Province)), cex=3)+
+  scale_y_continuous(name="Observations per 1000 people")+
+	scale_color_manual(name="Province", values=c("#F8766D","#FB61D7","#53B400","#A58AFF", "#00C094" ,"#00B6EB",  "#C49A00"))+
+  theme_bw()+
+	geom_text_repel(aes(x=Population.density.per.square.kilometre..2016, y=Observations_capita*1000, label=as.factor(Ggrphc_n)))+
+ theme(legend.position = "none")
+p4
+
+plot_grid(p3, p4)
+```
+
