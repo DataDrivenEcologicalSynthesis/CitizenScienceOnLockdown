@@ -3,11 +3,43 @@
 # INIT ----
 # INIT ----
 rm(list = ls())
+install.packages("vegan")
+install.packages("fuzzySim")
+install.packages("fossil")
 # Libraries
 library(dplyr)
 library(ggplot2)
-# library(car)
-
+library(vegan)
+library(reshape2)
+library(fuzzySim)
+library(fossil)
+data(BCI, package = "vegan")
+BCI2 <- BCI[1:26, ]
+data(rotifier)
+	 inat_clean_rarefaction<- inat_identity%>%
+	dplyr::group_by(observed_on)%>%
+	#dplyr::summarise(spc_richness = length(unique(scientific_name)))%>%
+	select(observed_on, scientific_name)
+	 
+	 inat_clean_rarefaction$freq<-1
+	 community<-aggregate(freq~scientific_name+observed_on,inat_clean_rarefaction,sum)
+	 A<-create.matrix(fdata.list, tax.name = "species", locality = "locality", 
+	 			  abund=TRUE, abund.col="abundance")
+	 A<-create.matrix(community, tax.name = "scientific_name", locality = "observed_on", 
+	 			  abund=TRUE, abund.col="freq")
+	 rarenew<-as.data.frame(t(A))
+	 rare<-rarenew%>%
+	 	filter(rowSums(rarenew)!=1)
+	#rare<- splist2presabs(inat_clean_rarefaction, sites.col = 1, sp.col = 2, keep.n = FALSE)
+	#rarenew<-rare[,2:387]
+	raremax <- min(rowSums(rare))
+	S <- specnumber(rare) # observed number of species
+		Srare <- rarefy(rare, raremax)
+		
+	plot(S, Srare, xlab = "Observed No. of Species", ylab = "Rarefied No. of Species")
+	abline(0, 1)
+	rarecurve(rare, step = 20, sample = raremax, col = "blue", cex = 0.6)
+biodiversity<-inat_clean_rarefaction
 # end INIT ----
 
 # I. Importing datasets ----
@@ -26,6 +58,7 @@ inat <- read.table("Data/04_Inat_from_clipping_NoDuplicates-csv.tsv"
 #   group_by(id) %>% 
 # 	filter(n() != 1)
 # write.table(dup,"dup.csv",sep=",")
+
 #final data with unique id
 inat_identity<-distinct(inat, id, .keep_all= TRUE)
 #write.table(inat_identity,"inat_identity.csv",sep=",")
@@ -77,11 +110,22 @@ inat_clean_time<- inat_identity%>%
 	dplyr::summarise(spc_richness = length(unique(scientific_name))
 					 , nb_observations = length(user_login)
 					 , nb_observators = length(unique(user_login)))
+inat_clean_timenew<- inat_identity%>%
+	mutate(observed_on = as.Date(observed_on))%>%
+
+	dplyr::group_by(observed_on ,Ggrphc_n)%>%
+	dplyr::summarise(spc_richness = length(unique(scientific_name))
+					 , nb_observations = length(user_login)
+					 , nb_observators = length(unique(user_login)))
+# inat_clean_timenewnew<-inat_clean_timenew%>%
+# 	mutate(observed_on = as.Date(observed_on))%>%
+# mutate(year= format(observed_on, '%Y')) 
+# mutate(date= format(observed_on, '%m-%d')) 
 #number of observations
-jpeg("Figures/Hypothesis_1/SX_timeym_observation.jpg", width = 1000, height = 700)
-ggplot(inat_clean_time, aes(x =ym, y = nb_observations,group=1)) +
+jpeg("Figures/Hypothesis_1/SX_timeym_observationnew.jpg", width = 1000, height = 700)
+ggplot(inat_clean_timenewnew, aes(x =observed_on, y = nb_observations,group=1)) +
 	geom_line(aes(color=Ggrphc_n)) +
-	facet_wrap(~Ggrphc_n)+
+	facet_wrap(~year)+
 	theme_classic()+
 	theme(axis.text.x=element_text(angle=60, hjust=1)) 
 dev.off()
