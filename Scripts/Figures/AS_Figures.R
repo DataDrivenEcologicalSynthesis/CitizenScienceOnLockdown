@@ -267,16 +267,24 @@
 	# effect of the quarantine very light (p=0.15)
 
 	# Trying to make a plot for this
-	jpeg("Figures/Hypothesis_3/AS_LMQuarantine_SqrtObs_richness.jpg", width = 900, height = 500)
-	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness, col=quarantine)) +
-		geom_jitter() + 
-		stat_smooth(method=lm)
-	dev.off()
 	# can pretty much say that there's not an effect of the quarantine
 	# THIS IS ONLY FOR VISUALIZATING 
 	# You can't plot a model as complicated as the one we have
 	# Or idk how to
+	# trying a facet
 	
+	jpeg("Figures/Hypothesis_3/AS_LMCities_SqrtObs_richness_facet.jpg", width = 900, height = 500)
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness, col=Ggrphc_n)) +
+		geom_jitter() + 
+		stat_smooth(method=lm) +
+		facet_wrap(~as.factor(Ggrphc_n))
+	dev.off()
+	jpeg("Figures/Hypothesis_3/AS_LMQuarantines_SqrtObs_richness_facet.jpg", width = 900, height = 500)
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness, col=quarantine)) +
+		geom_jitter() + 
+		stat_smooth(method=lm) +
+		facet_wrap(~as.factor(Ggrphc_n))
+	dev.off()
 	
 
 # end IV. ----
