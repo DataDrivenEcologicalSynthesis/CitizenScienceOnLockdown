@@ -194,7 +194,10 @@ p.turnover=ggplot(data=spe.change.tot, aes(x=year, y=total, group=city))+
 	facet_wrap(~city)+
 	theme_bw()+
 	theme(legend.position = "none")
+
+png("Figures/Exploratory/MJ_spc_turnover.png", width = 1700, height = 1000, units ="px", res=150)
 p.turnover
+dev.off()
 
 p.appear=ggplot(data=spe.change.tot, aes(x=year, y=appearance, group=city))+
 	geom_point(aes(col=city))+
@@ -203,7 +206,10 @@ p.appear=ggplot(data=spe.change.tot, aes(x=year, y=appearance, group=city))+
 	facet_wrap(~city)+
 	theme_bw()+
 	theme(legend.position = "none")
+
+png("Figures/Exploratory/MJ_spc_appear.png", width = 1700, height = 1000, units ="px", res=150)
 p.appear
+dev.off
 
 # Overall, it seems like species turnover was higher in the earlier day of use of the app, and has decreased since.
 # We do not see a massive change in reported species composition due to quarantine.
@@ -225,7 +231,11 @@ inat1=inat %>%
 	separate(city_year, into=c("Ggrphc_n", "year"), remove=FALSE)
 inat1$n=as.numeric(inat1$n)
 
+<<<<<<< HEAD
 inat2=inat1%>%
+=======
+inat2=left_join(inat1, city_years)%>% #TL - object not found (city_years), can't run code
+>>>>>>> cb140bc00510d32eff8c954bbc3feb46a9ef7a75
 	pivot_wider(id_cols=city_year, names_from=scientific_name, values_from=n)%>%
 	replace(., is.na(.), "0")%>%
 	separate(city_year, into=c("Ggrphc_n", "year"), remove=FALSE)
