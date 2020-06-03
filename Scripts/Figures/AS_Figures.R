@@ -147,7 +147,16 @@
 	plot(mod1_c, which = 3)
 	Anova(mod1_c, type=3)
 	# apparently not
-	
+	jpeg("Figures/Hypothesis_1/AS_LMglobal_SqrtObs_richness_ColQuarantine.jpg", width = 900, height = 500)
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness)) +
+		geom_jitter(aes(col=quarantine)) + 
+		stat_smooth(method=lm)
+	dev.off()
+	jpeg("Figures/Hypothesis_1/AS_LMQuarantine_SqrtObs_richness.jpg", width = 900, height = 500)
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness, col=quarantine)) +
+		geom_jitter() + 
+		stat_smooth(method=lm)
+	dev.off()
 
 	# With a random effect of the cities
 	mod1_d <- nlme::lme(spc_richness ~ sqrt(nb_observators) + quarantine
@@ -161,7 +170,7 @@
 	e <- resid(mod1_d
 			   , type = "normalized")
 	plot(mod1_d$fitted[,"fixed"], e) 
-
+	# would be fig AS_LMcities_SqrtObs_richness.jpg
 
 # B. Hypothesis 2----
 	plot(spc_richness ~ park.area.percentage
@@ -170,6 +179,14 @@
 	summary(lm(spc_richness ~ park.area.percentage
 			   , data = final_dataset))
 	# doesn't appear to have a significant effect
+	# with actual area
+	plot(spc_richness ~ park.area
+		 , data = final_dataset)
+	# can't really see relationship
+	summary(lm(spc_richness ~ park.area
+			   , data = final_dataset))
+	# R = 0.17 so i don't feel like it's relevant
+	
 	# what about before and after quarantine
 	plot(spc_richness ~ quarantine
 		 , data = final_dataset)
@@ -250,14 +267,24 @@
 	# effect of the quarantine very light (p=0.15)
 
 	# Trying to make a plot for this
-	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness, col=quarantine)) +
-		geom_jitter() + 
-		stat_smooth(method=lm)
 	# can pretty much say that there's not an effect of the quarantine
 	# THIS IS ONLY FOR VISUALIZATING 
 	# You can't plot a model as complicated as the one we have
 	# Or idk how to
+	# trying a facet
 	
+	jpeg("Figures/Hypothesis_3/AS_LMCities_SqrtObs_richness_facet.jpg", width = 900, height = 500)
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness, col=Ggrphc_n)) +
+		geom_jitter() + 
+		stat_smooth(method=lm) +
+		facet_wrap(~as.factor(Ggrphc_n))
+	dev.off()
+	jpeg("Figures/Hypothesis_3/AS_LMQuarantines_SqrtObs_richness_facet.jpg", width = 900, height = 500)
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness, col=quarantine)) +
+		geom_jitter() + 
+		stat_smooth(method=lm) +
+		facet_wrap(~as.factor(Ggrphc_n))
+	dev.off()
 	
 
 # end IV. ----
