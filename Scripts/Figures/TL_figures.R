@@ -244,14 +244,14 @@ for(i in 1:111){
 }
 names(list.models) <- list.species
 
-#only 94 models pvalue >=0.05
-sig.models <- list.models[which(list.pvalues>=0.05)]
+#only 94 models pvalue <=0.05
+sig.models <- list.models[which(list.pvalues<=0.05)]
 
 #predict
-predict.spc <- data.frame(matrix(nrow=94,ncol=5))
+predict.spc <- data.frame(matrix(nrow=17,ncol=5))
 colnames(predict.spc) <- c("spc","predicted","lower","upper","actual")
 
-for(m in 1:94){
+for(m in 1:17){
 	sub.predict <- predict.lm(sig.models[[m]],newdata=data.frame(variable=2020),
 							  interval = "prediction")
 	predict.spc[m,1] <- names(sig.models[m])
@@ -260,10 +260,10 @@ for(m in 1:94){
 							filter(variable==2020) %>% 
 							filter(scientific_name==names(sig.models[m])) %>% 
 							select(value)
-	if(predict.spc[m,5]>predict.spc[m,2]){
+	if(predict.spc[m,5]>predict.spc[m,4]){
 		predict.spc$result[m] <- "greater"
 	} else {
-		if(predict.spc[m,5]<predict.spc[m,2]){
+		if(predict.spc[m,5]<predict.spc[m,3]){
 			predict.spc$result[m] <- "less"
 		} else {
 			predict.spc$result[m] <- "expected"
@@ -271,9 +271,55 @@ for(m in 1:94){
 	}
 }
 
-#cool so 69 species observed more than expected, 21 less than, 4 as expected
+#cool so 13 species observed more than expected, 4 less than expected
+#lets get common names
+comm <- sci2comm(predict.spc$spc)
+comm.df<-do.call(rbind,lapply(comm,data.frame))
+comm.df$spc <- rownames(comm.df)
+predict.spc<-left_join(predict.spc,comm.df,by="spc") 
+predict.spc$X..i..<-as.character(predict.spc$X..i..)
+#add common names not recognized
+predict.spc[8,7] <- "Pileated woodpecker"
+predict.spc[11,7] <- "Brown-headed cowbird"
+predict.spc[16,7] <- "Greater yellowlegs"
+colnames(predict.spc) <- c("spc","predicted","lower","upper","actual","result","common_name")
+
+#join datasets to make a graph
 modeled.spcs <- left_join(abund.year.sort,predict.spc,by=c("scientific_name"="spc")) %>% filter(!is.na(result))
-ggplot(modeled.spcs, aes(variable,value,group=scientific_name,col=result)) +
-	geom_line(alpha=0.4) +
+modeled.spcs$variable <- as.integer(as.character(modeled.spcs$variable))
+
+#split dataset into large observations and small observations
+
+#large observations, minus canada geese which was as expected
+large.model <- modeled.spcs %>% filter(scientific_name %in% filter(predict.spc,actual>100)$spc) %>%
+								filter(result == "greater")
+
+png("Figures/Species_composition/TL_lm_common_spc.png", width = 17, height = 12,units="cm",res=300)
+ggplot(data=subset(large.model, variable <= 2019), aes(variable,value,group=common_name)) +
+	stat_smooth(method=lm, fill="grey", col="black") +
+	geom_point(data=subset(large.model, variable == 2020),
+			   mapping=aes(variable,actual),
+			   col="#619CFF") +
+	geom_point(col="black") +
 	labs(x="Year",y="Number of Observations") +
-	theme_bw()
+	facet_wrap(~as.factor(common_name)) +
+	theme_classic() +
+	theme(axis.text.x = element_text(angle = 40,hjust = 1))
+dev.off()
+
+#small observations
+small.model <- modeled.spcs %>% filter(scientific_name %in% filter(predict.spc,actual<100)$spc)
+
+png("Figures/Species_composition/TL_lm_lesscommon_spc.png", width = 25, height = 20,units="cm",res=300)
+ggplot(data=subset(small.model, variable <= 2019), aes(variable,value,group=common_name,col=result)) +
+	stat_smooth(method=lm, fill="grey", col="black") +
+	geom_point(data=subset(small.model, variable == 2020),
+			   mapping=aes(variable,actual)) +
+	scale_color_discrete(breaks=c("greater","expected","less")) +
+	geom_point(col="black") +
+	labs(x="Year",y="Number of Observations") +
+	facet_wrap(~as.factor(common_name)) +
+	theme_classic() +
+	theme(legend.title = element_blank(),
+		  axis.text.x = element_text(angle = 45,hjust = 1))
+dev.off()
