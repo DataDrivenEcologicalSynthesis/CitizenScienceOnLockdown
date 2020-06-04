@@ -248,9 +248,32 @@ names(list.models) <- list.species
 sig.models <- list.models[which(list.pvalues>=0.05)]
 
 #predict
-m=1
-sub.predict <- predict.lm(sig.models[m],newdata=data.frame(variable=2020),
-						  interval = "prediction")
+predict.spc <- data.frame(matrix(nrow=94,ncol=5))
+colnames(predict.spc) <- c("spc","predicted","lower","upper","actual")
 
-mallard.predict<-predict.lm(mallard.lm,newdata=data.frame(year=2020),
-							interval = "prediction")
+for(m in 1:94){
+	sub.predict <- predict.lm(sig.models[[m]],newdata=data.frame(variable=2020),
+							  interval = "prediction")
+	predict.spc[m,1] <- names(sig.models[m])
+	predict.spc[m,2:4] <- sub.predict
+	predict.spc[m,5] <- abund.year %>% 
+							filter(variable==2020) %>% 
+							filter(scientific_name==names(sig.models[m])) %>% 
+							select(value)
+	if(predict.spc[m,5]>predict.spc[m,2]){
+		predict.spc$result[m] <- "greater"
+	} else {
+		if(predict.spc[m,5]<predict.spc[m,2]){
+			predict.spc$result[m] <- "less"
+		} else {
+			predict.spc$result[m] <- "expected"
+		}
+	}
+}
+
+#cool so 69 species observed more than expected, 21 less than, 4 as expected
+modeled.spcs <- left_join(abund.year.sort,predict.spc,by=c("scientific_name"="spc")) %>% filter(!is.na(result))
+ggplot(modeled.spcs, aes(variable,value,group=scientific_name,col=result)) +
+	geom_line(alpha=0.4) +
+	labs(x="Year",y="Number of Observations") +
+	theme_bw()
