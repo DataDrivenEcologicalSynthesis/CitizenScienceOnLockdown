@@ -89,14 +89,13 @@
 		geom_jitter(aes(x = park.area.percentage, y = spc_richness, col=factor(quarantine))) +
 		facet_wrap(~as.factor(Ggrphc_n))
 	dev.off()
-	jpeg("Figures/Hypothesis_2/AS_ParkAreaPercentage_vs_Richness_wQuarantine.jpg", width = 900, height = 500)
+	png("Figures/Hypothesis_2/AS_ParkAreaPercentage_vs_Richness_wQuarantine.png", width = 25, height = 20,units="cm",res=300)
 	ggplot(data = final_dataset) +
 		geom_jitter(aes(x = park.area.percentage, y = spc_richness, col=quarantine)) +
 		theme_classic() + 
 		labs(x="Percentage of park area", y="Species richness")
 	dev.off()
-	jpeg("Figures/Hypothesis_2/AS_ParkAreaPercentage_vs_Richness.jpg"
-		 , width = 900, height = 500, quality=100, pointsize = 200)
+	png("Figures/Hypothesis_2/AS_ParkAreaPercentage_vs_Richness.png", width = 25, height = 20,units="cm",res=300)
 	ggplot(data = final_dataset) +
 		geom_jitter(aes(x = park.area.percentage, y = spc_richness), size=5) +
 		theme_classic() + 
@@ -108,7 +107,7 @@
 # IV. Analysis ----
 # 0. Nb of observers through time ----
 	plot(nb_observators ~ year, data = final_dataset)
-	mod0_a <- nlme::lme(nb_observators ~ year
+	mod0_a <- nlme::lme(nb_observations ~ year
 						, random = ~1|Ggrphc_n
 						, data = final_dataset)
 	summary(mod0_a)
@@ -119,38 +118,38 @@
 			   , type = "normalized")
 	plot(mod0_a$fitted[,"fixed"], e) 
 	# assumptions aren't perfect but let's roll with it
-	jpeg("Figures/Hypothesis_1/AS_NObs_LMMCities_colQuarantine_bars.jpg", width = 900, height = 500)
-	ggplot(data=final_dataset, aes(x=year, y=nb_observators, fill = quarantine)) +
+	png("Figures/Hypothesis_1/AS_NObs_LMMCities_colQuarantine_bars.png", width = 25, height = 20,units="cm",res=300)
+	ggplot(data=final_dataset, aes(x=year, y=nb_observations, fill = quarantine)) +
 		geom_bar(stat="identity") + 
 		geom_smooth(data=subset(final_dataset,year <= 2019), method=lm, col="black", fill="grey")+
 		facet_wrap(~as.factor(Ggrphc_n)) + 
 		theme_classic() + 
-		labs(x="Year", y="Numbers of observators")
+		labs(x="Year", y="Numbers of observations")
 	dev.off()
-	jpeg("Figures/Hypothesis_1/AS_NObs_LMMCities_colQuarantine_points.jpg", width = 900, height = 500)
+	png("Figures/Hypothesis_1/AS_NObs_LMMCities_colQuarantine_points.png", width = 25, height = 20,units="cm",res=300)
 	ggplot(data=final_dataset, aes(x=year, y=nb_observators, col = quarantine)) +
 		geom_jitter(size=5) + 
 		stat_smooth(method=lm)+
 		facet_wrap(~as.factor(Ggrphc_n)) + 
 		theme_classic() + 
-		labs(x="Year", y="Numbers of observators")
+		labs(x="Year", y="Numbers of observations")
 	dev.off()
 	
 # A. Hypothesis 1 ----
-	plot(spc_richness ~ nb_observators, data = final_dataset)
+	plot(spc_richness ~ nb_observations, data = final_dataset)
 	# we can see a relation but it's not linear
 	# transformations to try to make it linear
-	plot(spc_richness ~ log(nb_observators), data = final_dataset)
-	plot(spc_richness ~ sqrt(nb_observators), data = final_dataset)
+	plot(spc_richness ~ log(nb_observations), data = final_dataset)
+	plot(spc_richness ~ sqrt(nb_observations), data = final_dataset)
 	
 	# checking the models
-	summary(lm(spc_richness ~ nb_observators, data = final_dataset))
-	summary(lm(spc_richness ~ log(nb_observators), data = final_dataset))
-	summary(lm(spc_richness ~ sqrt(nb_observators), data = final_dataset))
+	summary(lm(spc_richness ~ nb_observations, data = final_dataset))
+	summary(lm(spc_richness ~ log(nb_observations), data = final_dataset))
+	summary(lm(spc_richness ~ sqrt(nb_observations), data = final_dataset))
 	# pick the sqrt (higher R^2)
 	
 	# checking the assumptions and all
-	mod1_a <- lm(spc_richness ~ sqrt(nb_observators)
+	mod1_a <- lm(spc_richness ~ sqrt(nb_observations)
 				 , data = final_dataset)
 	plot(mod1_a, which = 2)
 	plot(mod1_a, which = 3)
@@ -159,7 +158,7 @@
 		# species richness increases with nb of observators
 	
 	# let's try adding the city to see if it improves the model
-	mod1_b <- lm(spc_richness ~ nb_observators + Ggrphc_n
+	mod1_b <- lm(spc_richness ~ nb_observations + Ggrphc_n
 				 , data = final_dataset)
 	plot(mod1_b, which = 2)
 	plot(mod1_b, which = 3)
@@ -170,32 +169,32 @@
 	# so that we can generalize to Canada
 	
 	# Plot to represent that
-	jpeg("Figures/Hypothesis_1/AS_LMglobal_SqrtObs_richness.jpg", width = 900, height = 500)
-	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness)) +
+	png("Figures/Hypothesis_1/AS_LMglobal_SqrtObs_richnes.png", width = 25, height = 20,units="cm",res=300)
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observations), y=spc_richness)) +
 		geom_jitter(size=5) + 
 		stat_smooth(method=lm)+
 		theme_classic() + 
-		labs(x="Square root of the number of observators", y="Species richness")
+		labs(x="Square root of the number of observations", y="Species richness")
 	dev.off()
-	jpeg("Figures/Hypothesis_1/AS_LMglobal_Obs_richness.jpg", width = 900, height = 500)
-	ggplot(data=final_dataset, aes(x=nb_observators, y=spc_richness)) +
+	png("Figures/Hypothesis_1/AS_LMglobal_Obs_richness.png", width = 25, height = 20,units="cm",res=300)
+	ggplot(data=final_dataset, aes(x=nb_observations, y=spc_richness)) +
 		geom_jitter(size=5) + 
 		theme_classic() + 
-		labs(x="Number of observators", y="Species richness")
+		labs(x="Number of observations", y="Species richness")
 	dev.off()
 	jpeg("Figures/Hypothesis_1/AS_LMcities_SqrtObs_richness.jpg", width = 900, height = 500)
-	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness, col=Ggrphc_n)) +
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observations), y=spc_richness, col=Ggrphc_n)) +
 		geom_jitter() + 
 		stat_smooth(method=lm)
 	dev.off()
 	jpeg("Figures/Hypothesis_1/AS_LMglobal_SqrtObs_richness_ColCities.jpg", width = 900, height = 500)
-	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness)) +
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observations), y=spc_richness)) +
 		geom_jitter(aes(col=Ggrphc_n)) + 
 		stat_smooth(method=lm)
 	dev.off()
 	
 	# Is there an effect of the quarantine?
-	mod1_c <- lm(spc_richness ~ sqrt(nb_observators) + quarantine + Ggrphc_n
+	mod1_c <- lm(spc_richness ~ sqrt(nb_observations) + quarantine + Ggrphc_n
 				 , data = final_dataset)
 	plot(mod1_c, which = 2)
 	plot(mod1_c, which = 3)
@@ -213,7 +212,7 @@
 	dev.off()
 
 	# With a random effect of the cities
-	mod1_d <- nlme::lme(spc_richness ~ sqrt(nb_observators) + quarantine
+	mod1_d <- nlme::lme(spc_richness ~ sqrt(nb_observations) + quarantine
 						, random = ~1|Ggrphc_n
 						, data = final_dataset)
 	summary(mod1_d)
@@ -304,21 +303,20 @@
 	# so let's go one step deeper and use a random effect model
 	
 	# what if I wanna do a model with random effect for the cities
-	mod3_e <- nlme::lme(spc_richness ~ sqrt(nb_observators) + park.area.percentage + Land.area.in.square.kilometres..2016 + quarantine + Population.density.per.square.kilometre..2016
+	mod3_e <- nlme::lme(spc_richness ~ sqrt(nb_observations) + park.area.percentage + Land.area.in.square.kilometres..2016 + quarantine + Population.density.per.square.kilometre..2016
 						, random = ~1|Ggrphc_n
 						, data = final_dataset)
 	summary(mod3_e)
 	# intercept / intercept + residual gives tot variation coming from cities
-	# 10.2 / (10.2 + 12.2) = 0.45% 
+	# 10.2 / (10.2 + 12.2) = 0.48% 
 	# MUST BE A RANDOM EFFECT
 	qqnorm(mod3_e)
 	e <- resid(mod3_e
 			   , type = "normalized")
 	plot(mod3_e$fitted[,"fixed"], e) 
 	
-	# With this model we have 45% variation coming from the cities
+	# With this model we have 48% variation coming from the cities
 	# an effect of the nb of observators
-	# effect of the quarantine very light (p=0.15)
 
 	# Trying to make a plot for this
 	# can pretty much say that there's not an effect of the quarantine
