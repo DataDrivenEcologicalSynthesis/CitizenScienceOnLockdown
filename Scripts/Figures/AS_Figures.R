@@ -10,7 +10,11 @@
 # end INIT ----
 
 # I. Importing datasets ----
+# A. Cities ----
 	cities_info <- read.csv("Data/02_cities_pop_park.csv")
+	
+# B. Inat ----
+	# DO NOT RUN
 	inat <- read.table("Data/04_Inat_from_clipping_NoDuplicates-csv.tsv"
 					   , quote= "\""
 					   , fill=T
@@ -18,8 +22,12 @@
 					   , comment.char = ""
 					   , na.strings=c("NA", "")
 					   , header=T)
-# end I. ----
-
+	inat_identity<-distinct(inat, id, .keep_all= TRUE)
+	# write.csv(inat_identity, "Data/inat_identity.csv", row.names = FALSE)
+	rm(list = ls())
+	# RUN AGAIN
+	inat <- read.csv("Data/inat_identity.csv")
+	
 # II. Formatting the datasets ----
 # A. Cities ----
 	cities_info_clean <- cities_info[, c("Geographic.name"
@@ -29,9 +37,9 @@
 										 , "Population.density.per.square.kilometre..2016"
 										 , "park.area"
 										 , "park.area.percentage"
-										 )]
+	)]
 	rm(cities_info)
-
+	
 # B. Inat ----
 	# getting the species richness, nb of observations and observers
 	inat_clean <- inat %>%
@@ -84,9 +92,17 @@
 	dev.off()
 	jpeg("Figures/Hypothesis_2/AS_ParkAreaPercentage_vs_Richness_wQuarantine.jpg", width = 900, height = 500)
 	ggplot(data = final_dataset) +
-		geom_jitter(aes(y = park.area.percentage, x = spc_richness, col=factor(quarantine)))
+		geom_jitter(aes(x = park.area.percentage, y = spc_richness, col=quarantine)) +
+		theme_classic() + 
+		labs(x="Percentage of park area", y="Species richness")
 	dev.off()
-
+	jpeg("Figures/Hypothesis_2/AS_ParkAreaPercentage_vs_Richness.jpg", width = 900, height = 500)
+	ggplot(data = final_dataset) +
+		geom_jitter(aes(x = park.area.percentage, y = spc_richness)) +
+		theme_classic() + 
+		labs(x="Percentage of park area", y="Species richness")
+	dev.off()
+	
 # end III. ----
 
 # IV. Analysis ----
