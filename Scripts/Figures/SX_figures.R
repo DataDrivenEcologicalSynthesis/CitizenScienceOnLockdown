@@ -46,7 +46,7 @@ inat <- read.table("Data/04_Inat_from_clipping_NoDuplicates-csv.tsv"
 
 #final data with unique id
 inat_identity<-distinct(inat, id, .keep_all= TRUE)
-#write.table(inat_identity,"Data/inat_identity.csv",sep=",")
+#write.table(inat_identity,"Data/04_inat_identity.csv",sep=",")
 
 ###figures for quality_grade
 inat_clean_observation <- inat_identity%>%
