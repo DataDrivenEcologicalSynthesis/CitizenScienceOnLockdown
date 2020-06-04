@@ -15,16 +15,15 @@
 	
 # B. Inat ----
 	# DO NOT RUN
-	inat <- read.table("Data/04_Inat_from_clipping_NoDuplicates-csv.tsv"
-					   , quote= "\""
-					   , fill=T
-					   , sep='\t'
-					   , comment.char = ""
-					   , na.strings=c("NA", "")
-					   , header=T)
-	inat_identity<-distinct(inat, id, .keep_all= TRUE)
+	# inat <- read.table("Data/04_Inat_from_clipping_NoDuplicates-csv.tsv"
+	# 				   , quote= "\""
+	# 				   , fill=T
+	# 				   , sep='\t'
+	# 				   , comment.char = ""
+	# 				   , na.strings=c("NA", "")
+	# 				   , header=T)
+	# inat_identity<-distinct(inat, id, .keep_all= TRUE)
 	# write.csv(inat_identity, "Data/inat_identity.csv", row.names = FALSE)
-	rm(list = ls())
 	# RUN AGAIN
 	inat <- read.csv("Data/inat_identity.csv")
 	
@@ -96,7 +95,8 @@
 		theme_classic() + 
 		labs(x="Percentage of park area", y="Species richness")
 	dev.off()
-	jpeg("Figures/Hypothesis_2/AS_ParkAreaPercentage_vs_Richness.jpg", width = 900, height = 500)
+	jpeg("Figures/Hypothesis_2/AS_ParkAreaPercentage_vs_Richness.jpg"
+		 , width = 900, height = 500, quality=100, pointsize = 200)
 	ggplot(data = final_dataset) +
 		geom_jitter(aes(x = park.area.percentage, y = spc_richness)) +
 		theme_classic() + 
@@ -119,11 +119,21 @@
 			   , type = "normalized")
 	plot(mod0_a$fitted[,"fixed"], e) 
 	# assumptions aren't perfect but let's roll with it
-	jpeg("Figures/Hypothesis_1/AS_NObs_LMMCities_colQuarantine.jpg", width = 900, height = 500)
+	jpeg("Figures/Hypothesis_1/AS_NObs_LMMCities_colQuarantine_bars.jpg", width = 900, height = 500)
+	ggplot(data=final_dataset, aes(x=year, y=nb_observators, fill = quarantine)) +
+		geom_bar(stat="identity") + 
+		geom_smooth(data=subset(final_dataset,year <= 2019), method=lm, col="black", fill="grey")+
+		facet_wrap(~as.factor(Ggrphc_n)) + 
+		theme_classic() + 
+		labs(x="Year", y="Numbers of observators")
+	dev.off()
+	jpeg("Figures/Hypothesis_1/AS_NObs_LMMCities_colQuarantine_points.jpg", width = 900, height = 500)
 	ggplot(data=final_dataset, aes(x=year, y=nb_observators, col = quarantine)) +
 		geom_jitter() + 
 		stat_smooth(method=lm)+
-		facet_wrap(~as.factor(Ggrphc_n))
+		facet_wrap(~as.factor(Ggrphc_n)) + 
+		theme_classic() + 
+		labs(x="Year", y="Numbers of observators")
 	dev.off()
 	
 # A. Hypothesis 1 ----
@@ -163,7 +173,15 @@
 	jpeg("Figures/Hypothesis_1/AS_LMglobal_SqrtObs_richness.jpg", width = 900, height = 500)
 	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness)) +
 		geom_jitter() + 
-		stat_smooth(method=lm)
+		stat_smooth(method=lm)+
+		theme_classic() + 
+		labs(x="Square root of the number of observators", y="Species richness")
+	dev.off()
+	jpeg("Figures/Hypothesis_1/AS_LMglobal_Obs_richness.jpg", width = 900, height = 500)
+	ggplot(data=final_dataset, aes(x=nb_observators, y=spc_richness)) +
+		geom_jitter() + 
+		theme_classic() + 
+		labs(x="Number of observators", y="Species richness")
 	dev.off()
 	jpeg("Figures/Hypothesis_1/AS_LMcities_SqrtObs_richness.jpg", width = 900, height = 500)
 	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness, col=Ggrphc_n)) +
@@ -319,6 +337,8 @@
 	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness, col=quarantine)) +
 		geom_jitter() + 
 		stat_smooth(method=lm) +
+		theme_classic() + 
+		labs(x="Percentage of park area", y="Species richness") +
 		facet_wrap(~as.factor(Ggrphc_n))
 	dev.off()
 	jpeg("Figures/Hypothesis_3/AS_LMCities_SqrtObs_richness_facet_colQuarantine.jpg", width = 900, height = 500)
