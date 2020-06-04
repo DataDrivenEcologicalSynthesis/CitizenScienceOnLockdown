@@ -331,12 +331,12 @@
 		stat_smooth(method=lm) +
 		facet_wrap(~as.factor(Ggrphc_n))
 	dev.off()
-	jpeg("Figures/Hypothesis_3/AS_LMQuarantines_SqrtObs_richness_facet.jpg", width = 900, height = 500)
-	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness, col=quarantine)) +
+	png("Figures/Hypothesis_3/AS_LMQuarantines_SqrtObs_richness_facet.png", width = 25, height = 20,units="cm",res=300)
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observations), y=spc_richness, col=quarantine)) +
 		geom_jitter(size=3) + 
 		stat_smooth(method=lm) +
 		theme_classic() + 
-		labs(x="Percentage of park area", y="Species richness") +
+		labs(x="Square root of the number of observations", y="Species richness") +
 		facet_wrap(~as.factor(Ggrphc_n))
 	dev.off()
 	jpeg("Figures/Hypothesis_3/AS_LMCities_SqrtObs_richness_facet_colQuarantine.jpg", width = 900, height = 500)
@@ -345,17 +345,19 @@
 		stat_smooth(method=lm) +
 		facet_wrap(~as.factor(Ggrphc_n))
 	dev.off()
-	jpeg("Figures/Hypothesis_2/AS_PopulationDensity_vs_Richness.jpg", width = 900, height = 500)
+	png("Figures/Hypothesis_2/AS_PopulationDensity_vs_Richness.png", width = 25, height = 20,units="cm",res=300)
 	ggplot(data=final_dataset, aes(x=Population.density.per.square.kilometre..2016, y=spc_richness)) +
 		geom_jitter(size=5) +
 		theme_classic() + 
 		labs(x="Population density in 2016", y="Species richness", size=4)
 	dev.off()
+	png("Figures/Hypothesis_3/AS_EffectQuarantine.png", width = 25, height = 20,units="cm",res=300)
 	
-	jpeg("Figures/Hypothesis_3/AS_EffectQuarantine.jpg", width = 900, height = 500)
-	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness, col=quarantine)) +
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observations), y=spc_richness, col=quarantine)) +
 		geom_jitter(size=5) + 
-		stat_smooth(data=subset(final_dataset,year <= 2019), method=lm, col="black") 
+		stat_smooth(data=subset(final_dataset,year <= 2019), method=lm, col="black") +
+		theme_classic() +
+		labs(x="Square root of the number of observations", y="Species richness", size=4)
 	dev.off()
 	
 	
