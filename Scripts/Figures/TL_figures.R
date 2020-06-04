@@ -11,19 +11,32 @@ library(ggmap)
 library(osmdata)
 library(nlme)
 library(reshape2)
+library(broom)
 
 #---------------------import data--------------------------#
 #inat stuff
 inat <- read.table("Data//04_Inat_from_clipping_NoDuplicates-csv.tsv", 
 				   quote= "\"", fill=T, sep='\t',comment.char = "", 
 				   na.strings=c("NA", ""), header=T)
+
 #inat as shp
 inat$long <- as.character(inat$geometry) %>% readr::parse_number()
 inat$lat <- as.character(inat$Column.50) %>% readr::parse_number()
 inat.shp <- st_as_sf(inat,coords=c("long","lat"),crs=4326)
 
 #city properties
-cities <- read.csv("Data/02_cities_pop_park.csv")
+cities_info <- read.csv("Data/02_cities_pop_park.csv")
+
+cities_info_clean <- cities_info[, c("Geographic.name"
+									 , "Population..2016"
+									 , "Total.private.dwellings..2016"
+									 , "Land.area.in.square.kilometres..2016"
+									 , "Population.density.per.square.kilometre..2016"
+									 , "park.area"
+									 , "park.area.percentage"
+)]
+rm(cities_info)
+
 city.boundaries <- sf::st_read("Data/02_cities_boundaries.shp", crs=4326)
 city.box <- read.csv("Data/02_cities_boundingboxes.csv")
 parks.mpoly <- sf::st_read("Data/06_park_mpoly_boundaries.shp")
@@ -134,7 +147,7 @@ ggmap(hamilton) +
 dev.off()
 #--------------Hypothesis 2----------------#
 #map
-spc.rich.park <- left_join(CityTotal,cities,by=c("city" = "Geographic.name"))
+spc.rich.park <- left_join(CityTotal,cities_info_clean,by=c("city" = "Geographic.name"))
 
 plot(spc.rich.park$spc_richness~spc.rich.park$park.area.percentage)
 
@@ -155,11 +168,89 @@ lme.fit <- lme(spc_richness~park.area.percentage,
 summary(lme.fit)
 
 #--------------species abundance-----------------#
-abund.year <- dcast(inat, scientific_name~year+Ggrphc_n, fun.aggregate = length, 
-					value.var = "scientific_name") %>%
-				melt(id.vars="scientific_name",measure.vars=c("2016","2017","2018","2019","2020"))
-
+###lets look at some histograms??###
 #histogram of abundance per year
+abund.year <- dcast(inat, scientific_name~year, fun.aggregate = length, 
+					value.var = "scientific_name") %>%
+				melt(id.vars="scientific_name",
+					 measure.vars=c("2016","2017","2018","2019","2020"))
+
 ggplot(abund.year, aes(value)) + 
 	geom_histogram() +
 	facet_wrap(abund.year$variable)
+#histogram of abundance per city
+abund.city <- dcast(inat, scientific_name~Ggrphc_n, fun.aggregate = length, 
+					value.var = "scientific_name") %>%
+				melt(id.vars="scientific_name",
+					 measure.vars=c("Vancouver","Surrey", "Calgary","Edmonton", 
+					 			   "Saskatoon","Winnipeg","London","Hamilton", 
+					 			   "Brampton", "Mississauga","Toronto", "Markham",
+					 			   "Vaughan", "Ottawa", "Gatineau" , "Laval" , 
+					 			   "Montreal","Longueuil",  "Quebec",  "Halifax"))
+ggplot(abund.city, aes(value)) + 
+	geom_histogram() +
+	facet_wrap(abund.city$variable)
+#lol lets not
+
+###how do observations of species change###
+#trend in observation of each species across years
+abund.year.sort <- arrange(abund.year,scientific_name)
+
+png("Figures/Species_composition/TL_change_in_abund_per_spc.png", width = 900, height = 700, units ="px", res=120)
+ggplot(abund.year.sort, aes(variable,value,group=scientific_name)) +
+	geom_line(alpha=0.4) +
+	labs(x="Year",y="Number of Observations") +
+	theme_bw()
+dev.off()
+
+###trend in mallards###
+mallard <- inat %>% filter(scientific_name=="Anas platyrhynchos") %>%
+					dcast(year~scientific_name, fun.aggregate = length, 
+						  value.var = "scientific_name")
+colnames(mallard) <- c("year","mallard")
+mallard$quarantine <- c(rep("no",4),"yes")
+#model
+mallard.lm <- lm(mallard~year,data=mallard[1:4,])
+summary(mallard.lm)
+mallard.predict<-predict.lm(mallard.lm,newdata=data.frame(year=2020),
+							interval = "prediction")
+#plot
+png("Figures/Species_composition/TL_Pandemic_mallard_lm.png", width = 900, height = 700, units ="px", res=120)
+ggplot(mallard, aes(x=year, y=mallard, col=quarantine)) + 
+	geom_point() +
+	stat_smooth(data=subset(mallard,year <= 2019),method = "lm", color="red")
+dev.off()
+
+###trend in all species???###
+#list of species that have occurrences every year
+species.years <- abund.year %>% 
+					filter(value!=0) %>% 
+					count(scientific_name) %>% 
+					filter(n==5) #111 species out of 386 species
+#dataset of species that appear every year
+allyears.species <- abund.year %>%
+						filter(scientific_name %in% as.character(species.years$scientific_name))
+list.species <- as.character(species.years$scientific_name)
+
+#linear model for each of the species
+list.models <- list()
+list.pvalues <- c()
+for(i in 1:111){
+	sub.spc <- filter(abund.year, scientific_name==list.species[i])
+	sub.spc$variable <- as.numeric(as.character(sub.spc$variable))
+	subset.lm <- lm(value~variable, data=subset(sub.spc,variable<=2019))
+	list.models[[i]] <- subset.lm
+	list.pvalues[i] <- glance(subset.lm)$p.value
+}
+names(list.models) <- list.species
+
+#only 94 models pvalue >=0.05
+sig.models <- list.models[which(list.pvalues>=0.05)]
+
+#predict
+m=1
+sub.predict <- predict.lm(sig.models[m],newdata=data.frame(variable=2020),
+						  interval = "prediction")
+
+mallard.predict<-predict.lm(mallard.lm,newdata=data.frame(year=2020),
+							interval = "prediction")
