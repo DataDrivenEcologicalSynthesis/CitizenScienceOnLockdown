@@ -98,7 +98,7 @@
 	jpeg("Figures/Hypothesis_2/AS_ParkAreaPercentage_vs_Richness.jpg"
 		 , width = 900, height = 500, quality=100, pointsize = 200)
 	ggplot(data = final_dataset) +
-		geom_jitter(aes(x = park.area.percentage, y = spc_richness)) +
+		geom_jitter(aes(x = park.area.percentage, y = spc_richness), size=5) +
 		theme_classic() + 
 		labs(x="Percentage of park area", y="Species richness")
 	dev.off()
@@ -129,7 +129,7 @@
 	dev.off()
 	jpeg("Figures/Hypothesis_1/AS_NObs_LMMCities_colQuarantine_points.jpg", width = 900, height = 500)
 	ggplot(data=final_dataset, aes(x=year, y=nb_observators, col = quarantine)) +
-		geom_jitter() + 
+		geom_jitter(size=5) + 
 		stat_smooth(method=lm)+
 		facet_wrap(~as.factor(Ggrphc_n)) + 
 		theme_classic() + 
@@ -172,14 +172,14 @@
 	# Plot to represent that
 	jpeg("Figures/Hypothesis_1/AS_LMglobal_SqrtObs_richness.jpg", width = 900, height = 500)
 	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness)) +
-		geom_jitter() + 
+		geom_jitter(size=5) + 
 		stat_smooth(method=lm)+
 		theme_classic() + 
 		labs(x="Square root of the number of observators", y="Species richness")
 	dev.off()
 	jpeg("Figures/Hypothesis_1/AS_LMglobal_Obs_richness.jpg", width = 900, height = 500)
 	ggplot(data=final_dataset, aes(x=nb_observators, y=spc_richness)) +
-		geom_jitter() + 
+		geom_jitter(size=5) + 
 		theme_classic() + 
 		labs(x="Number of observators", y="Species richness")
 	dev.off()
@@ -304,7 +304,7 @@
 	# so let's go one step deeper and use a random effect model
 	
 	# what if I wanna do a model with random effect for the cities
-	mod3_e <- nlme::lme(spc_richness ~ sqrt(nb_observators) + park.area.percentage + Land.area.in.square.kilometres..2016 + quarantine
+	mod3_e <- nlme::lme(spc_richness ~ sqrt(nb_observators) + park.area.percentage + Land.area.in.square.kilometres..2016 + quarantine + Population.density.per.square.kilometre..2016
 						, random = ~1|Ggrphc_n
 						, data = final_dataset)
 	summary(mod3_e)
@@ -335,7 +335,7 @@
 	dev.off()
 	jpeg("Figures/Hypothesis_3/AS_LMQuarantines_SqrtObs_richness_facet.jpg", width = 900, height = 500)
 	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness, col=quarantine)) +
-		geom_jitter() + 
+		geom_jitter(size=3) + 
 		stat_smooth(method=lm) +
 		theme_classic() + 
 		labs(x="Percentage of park area", y="Species richness") +
@@ -347,5 +347,18 @@
 		stat_smooth(method=lm) +
 		facet_wrap(~as.factor(Ggrphc_n))
 	dev.off()
-
+	jpeg("Figures/Hypothesis_2/AS_PopulationDensity_vs_Richness.jpg", width = 900, height = 500)
+	ggplot(data=final_dataset, aes(x=Population.density.per.square.kilometre..2016, y=spc_richness)) +
+		geom_jitter(size=5) +
+		theme_classic() + 
+		labs(x="Population density in 2016", y="Species richness", size=4)
+	dev.off()
+	
+	jpeg("Figures/Hypothesis_3/AS_EffectQuarantine.jpg", width = 900, height = 500)
+	ggplot(data=final_dataset, aes(x=sqrt(nb_observators), y=spc_richness, col=quarantine)) +
+		geom_jitter(size=5) + 
+		stat_smooth(data=subset(final_dataset,year <= 2019), method=lm, col="black") 
+	dev.off()
+	
+	
 # end IV. ----
