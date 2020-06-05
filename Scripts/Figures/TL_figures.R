@@ -294,12 +294,12 @@ modeled.spcs$variable <- as.integer(as.character(modeled.spcs$variable))
 large.model <- modeled.spcs %>% filter(scientific_name %in% filter(predict.spc,actual>100)$spc) %>%
 								filter(result == "greater")
 
-png("Figures/Species_composition/TL_lm_common_spc.png", width = 17, height = 12,units="cm",res=300)
+png("Figures/Species_composition/TL_lm_common_spc.png", width = 15, height = 15,units="cm",res=300)
 ggplot(data=subset(large.model, variable <= 2019), aes(variable,value,group=common_name)) +
 	stat_smooth(method=lm, fill="grey", col="black") +
 	geom_point(data=subset(large.model, variable == 2020),
 			   mapping=aes(variable,actual),
-			   col="#619CFF") +
+			   col="#00BA38") +
 	geom_point(col="black") +
 	labs(x="Year",y="Number of Observations") +
 	facet_wrap(~as.factor(common_name)) +
