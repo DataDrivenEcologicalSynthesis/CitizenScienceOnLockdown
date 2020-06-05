@@ -1,0 +1,607 @@
+#########################################################################################################
+# MJ code for figures and analyses
+#########################################################################################################
+
+# Note that because of my github issues, I did worked locally on my computer so the paths to access data
+# and save figures would need to be modified for further use
+
+# So many libraries
+library(maps)
+library(mapdata)
+library(mapproj)
+library(stringr)
+library(rnaturalearthhires)
+library(raster)
+library(mapproj)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(rgeos)
+library(sf)
+library(rgeos)
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(car)
+library(cowplot)
+library(magrittr)
+library(vegan)
+library(fuzzySim)
+library(ggrepel)
+library(codyn)
+library(lmerTest)
+library(broom)
+library(gridExtra)
+
+#########################################################################################################
+#0. Importing species and cities data -  downloaded from Github on June 3, 9:00pm
+#########################################################################################################
+
+# Importing datasets - Based on Aliénor's AS_Figures.R code
+setwd("~/Dropbox/PDF UQAT/Data synthesis/Final codes")
+inat <- read.table("04_Inat_from_clipping_NoDuplicates-csv.tsv"
+                   , quote= "\""
+                   , fill=T
+                   , sep='\t'
+                   , comment.char = ""
+                   , na.strings=c("NA", "")
+                   , header=T)
+inat_identity<-dplyr::distinct(inat, id, .keep_all= TRUE) # that should give us 18,619 observations in total.
+inat=inat_identity # This because I am running out of time and can't rewrite all the code.
+
+cities_info <- read.csv("02_cities_pop_park.txt")
+
+# Cities
+cities_info_clean <- cities_info[, c("Geographic.name"
+                                     , "Population..2016"
+                                     , "Total.private.dwellings..2016"
+                                     , "Land.area.in.square.kilometres..2016"
+                                     , "Population.density.per.square.kilometre..2016"
+                                     , "park.area"
+                                     , "park.area.percentage"
+)]
+rm(cities_info)
+
+# getting the species richness, nb of observations and observers (obtained from AS's code)
+inat_clean <- inat %>%
+  dplyr::group_by(Ggrphc_n, year) %>%
+  dplyr::summarise(spc_richness = length(unique(scientific_name))
+                   , nb_observations = length(user_login)
+                   , nb_observators = length(unique(user_login)))
+# coding the quarantine
+inat_clean$quarantine <- ifelse(inat_clean$year == 2020, "yes", "no")
+inat_clean$quarantine <- factor(inat_clean$quarantine)
+
+#########################################################################################################
+# 1. Exploring the data - MAP (MJ_MapCanada_1.png)
+#########################################################################################################
+
+###################################################
+# 1.1 Prepare data
+###################################################
+  # Import city data
+  setwd("~/My documents/CitizenScienceOnLockdown/Data")
+  cities_info <- read.csv("02_cities_pop_park.csv")
+
+  # canada.cities (from package maps) includes the coordinates of all Canadian cities with pop >1000
+  ocanada=canada.cities	
+  ocanada$name=str_sub(canada.cities$name, end=-4)
+
+  ocanada2=ocanada%>%
+       mutate(name = plyr::revalue(name, c("OTTAWA"="Ottawa", "Mississauga Beach"="Mississauga")))
+  ocanada2$name
+
+  # Ah this dataset is missing a few. Missing Brampton, Laval, Surrey ,Markham, Vaughan, Gatineau, Longueuil
+  # Apparently is hates suburbs
+
+  # Add the missing cities and their approx. coordinates
+  missing.names=c("Brampton", "Laval", "Surrey" ,"Markham", "Vaughan", "Gatineau", "Longueuil")
+  missing.country.etc=c("ON", "QC", "BC", "ON", "ON", "QC", "QC")
+  missing.pop=c(rep("NA", 7))
+  missing.lat=c(43.73, 45.61, 49.19, 43.86, 43.85, 45.48, 45.54)
+  missing.long=c(-79.76, -73.71, -122.85, -79.34, -79.51, -75.70, -73.51)
+  missing.capital=c(rep(0,7))
+
+  missing.cities=data.frame(cbind(missing.names,missing.country.etc, missing.pop, missing.lat,missing.long,missing.capital))
+  colnames(missing.cities)=c(names(ocanada2))
+
+  ocanada3=rbind(ocanada2, missing.cities)
+
+  # Merge the cities detailed info with their coordinates
+  cities_all=left_join(cities_info, ocanada3, by=c("Geographic.name"= "name"))
+###################################################
+# 1.2 Build the maps (3 different pannels)
+###################################################
+  theme_set(theme_bw())
+  sites <- st_as_sf(cities_all, coords = c("long", "lat"), 
+                  crs = 4326, agr = "constant", remove = FALSE) 
+
+  #sites=cbind(sites, cities_all$long, cities_all$lat)
+  # Get province outlines
+  prov <- ne_states(c("canada"))
+
+  map.canada=ggplot() + 
+    geom_sf()+
+    #geom_sf(data = subset(world, name=="Canada"), size = 0.5, color = "grey", fill = "grey")+ 
+    geom_polygon(data = prov, aes(x = long, y = lat, group = group), fill = 'grey') + 
+    geom_sf(data = sites, size = 2, shape = 16, aes(col = Geographic.name)) +
+    geom_rect(aes(xmin=-80, xmax=-78.8, ymin=43.1, ymax=44), color="black", fill=NA)+
+    geom_rect(aes(xmin=-76, xmax=-73, ymin=45, ymax=46.5), color="black", fill=NA)+
+    geom_text_repel(data = filter(sites, Geographic.name %in% c("Vancouver", "Surrey", "Edmonton",
+        "Calgary", "Saskatoon", "Winnipeg", "Halifax", "Quebec")), 
+         aes(x = as.numeric(long), y = as.numeric(lat), label = Geographic.name), 
+         xlim=c(-130,-52),ylim=c(42,60),point.padding = 0.5) +
+  coord_sf(crs = 4326, xlim=c(-130,-52),ylim=c(42,60))+
+  theme(legend.position = "none", axis.title.x=element_blank(), axis.title.y=element_blank())
+  map.canada
+
+  map.ontario=ggplot() + 
+    geom_sf()+
+    #geom_sf(data = subset(world, name=="Canada"), size = 0.5, color = "grey", fill = "grey")+ 
+    geom_polygon(data = prov, aes(x = long, y = lat, group = group), fill = 'grey') + 
+    geom_sf(data = sites, size = 2, shape = 16, aes(col = Geographic.name)) +
+    geom_text_repel(data = filter(sites, Geographic.name %in% c("Toronto", "Markham", "Vaughan","Brampton", "Mississauga", "Hamilton")), 
+                  aes(x = as.numeric(long), y = as.numeric(lat), label = Geographic.name), 
+                  xlim=c(-80,-78.8),ylim=c(43.1,44)) +
+    coord_sf(crs = 4326, xlim=c(-80,-78.8),ylim=c(43.1,44))+
+    theme(legend.position = "none", axis.title.x=element_blank(), axis.title.y=element_blank())
+  map.ontario
+
+  map.quebec=ggplot() + 
+    geom_sf()+
+    #geom_sf(data = subset(world, name=="Canada"), size = 0.5, color = "grey", fill = "grey")+ 
+    geom_polygon(data = prov, aes(x = long, y = lat, group = group), fill = 'grey') + 
+    geom_sf(data = sites, size = 2, shape = 16, aes(col = Geographic.name)) +
+    geom_text_repel(data = filter(sites, Geographic.name %in% c("Ottawa", "Gatineau", "Laval", "Montreal", 'Longueuil')), 
+                    aes(x = as.numeric(long), y = as.numeric(lat), label = Geographic.name), 
+                  xlim=c(-76,-73),ylim=c(45,46.5)) +
+    coord_sf(crs = 4326, xlim=c(-76,-73),ylim=c(45,46.5))+
+    theme(legend.position = "none", axis.title.x=element_blank(), axis.title.y=element_blank())
+  map.quebec
+
+library("gridExtra")
+map.canada.cities=grid.arrange(map.canada,                             # First row with one plot spaning over 2 columns
+                               arrangeGrob(map.ontario, map.quebec, ncol = 2), # Second row with 2 plots in 2 different columns
+                               nrow = 2)    
+
+# This last section does not seem to work
+jpeg("CitizenScienceOnLockdown/Figures/Exploratory/MJ_Canada_map.jpg", width = 650, height = 550)
+# make your plot
+map.canada.cities
+# close the plot to save it.
+dev.off()
+
+#########################################################################################################
+# 2. Community analyses - Are we capturing more rare species or more common species?
+#########################################################################################################
+
+###################################################
+#2.1 Import the data
+###################################################
+# Note that this is ALMOST the same chunk of code that will be used at the sart of the ordinations section
+inat.hist=inat %>%
+  dplyr::select(Ggrphc_n, year, scientific_name)%>%
+  count(scientific_name, year)	# This generates the number of reports of a species per year
+inat.hist$n=as.numeric(inat.hist$n)
+
+# 2.2 Create some frequency histograms among years (cities as stacked?)
+ggplot(data=inat.hist, aes(n)) + 
+  geom_histogram()+
+  facet_wrap(~year)
+
+freq.hist.2016_2020=ggplot(inat.hist,aes(x=n)) + 
+  geom_histogram(data=subset(inat.hist, year == '2020'), fill = "turquoise4", alpha=0.2) +
+  geom_histogram(data=subset(inat.hist,year == '2019'),fill = "turquoise4", alpha=0.35) +
+  geom_histogram(data=subset(inat.hist,year == '2018'),fill = "turquoise4", alpha=0.5) +
+  geom_histogram(data=subset(inat.hist,year == '2017'),fill = "turquoise4", alpha=0.6) +
+  geom_histogram(data=subset(inat.hist,year == '2016'),fill = "turquoise4", alpha=0.8)+
+  scale_y_sqrt(name="Frequency (sqrt)")+theme_bw()+
+  scale_x_continuous(name="Number reports per species (all cities)")+
+  annotate("text", label="2016: darker -> 2020: lighter", x=450, y=150, size=4)
+freq.hist.2016_2020
+
+#histograms of abundance per year
+jpeg("Figures/MJ_QualityGrade_ALL.jpg", width = 350, height = 350)
+# make your plot
+ggplot(inat.hist, aes(n)) + 
+  geom_histogram(fill="turquoise4") +
+  facet_wrap(~year, ncol=1)
+# close the plot to save it.
+dev.off()
+
+
+
+# No stats conducted here, but it seems that as time goes by these is both an increase in the number of singletons and 
+# in the numbers of species that are reported a lot!
+# In this case, the top 3 seen in 2020 are Anas platyrhynchos (mallard), Turdus migratorius (American Robin), and Branta canadensis (Canada Goose)
+
+#########################################################################################################
+# 3. Generating figures related to hypothesis 4 - Community shifts in observations
+#########################################################################################################
+# Are we observing different species because the cities are quieter?
+
+###################################################
+# 3.1 Species turnover and appearance
+###################################################
+
+  # 3.1.1 Calculate species turnover for each city among years
+  iNat_spe_counts=inat %>%
+    select(Ggrphc_n, year, scientific_name)%>%
+    unite(col="City_Year", Ggrphc_n, year, sep = "_", remove=FALSE)%>%
+    count(City_Year, scientific_name)%>%
+    separate(City_Year, into=c("city", "year"), remove=FALSE)
+
+  iNat_spe_counts$scientific_name=as.factor(iNat_spe_counts$scientific_name)
+  iNat_spe_counts$city=as.factor(iNat_spe_counts$city)
+  iNat_spe_counts$year=as.integer(iNat_spe_counts$year)
+  iNat_spe_counts$n=as.numeric(iNat_spe_counts$n)
+
+  # Calculate relative total turnover within replicates
+  spe.turn=turnover(iNat_spe_counts, time.var="year", species.var="scientific_name", abundance.var="n",replicate.var="city",metric = "total")
+  spe.turn=data.frame(spe.turn)
+
+  # Calculate relative species appearances within replicates
+  spe.appear=turnover(iNat_spe_counts, time.var="year", species.var="scientific_name", abundance.var="n",replicate.var="city",metric = "appearance")
+  spe.appear=data.frame(spe.appear)
+
+  # Merge the two and add city info
+  spe.change=left_join(spe.turn, spe.appear)
+
+  spe.change.tot=left_join(spe.change, cities_info_clean, by=c("city"="Geographic.name"))%>%
+    rename("Pop.Density" = "Population.density.per.square.kilometre..2016")
+  
+  spe.change.tot$quarantine=	ifelse(spe.change.tot$year == 2020, "yes", "no")
+  spe.change.tot$quarantine <- factor(  spe.change.tot$quarantine)
+
+  # 3.1.2 Analyze species turnover according to parks and population and quarantine with cities as random (all years)
+  
+  mod.turn=lmer(total~scale(Pop.Density)+scale(park.area.percentage)+quarantine+(1|city), data=spe.change.tot)#Some predictor variables are on very different scales: consider rescaling 
+  summary(mod.turn)
+    plot(mod.turn)
+    hist(residuals(mod.turn))# residuals look ok
+  
+  mod.app=lmer(appearance~scale(Pop.Density)+scale(park.area.percentage)+quarantine+(1|city), data=spe.change.tot)#Some predictor variables are on very different scales: consider rescaling 
+  summary(mod.app)
+    plot(mod.app)
+    hist(residuals(mod.app))# residuals look ok         
+ 
+  write.csv(tidy(mod.turn), "mod.turn.csv")
+  write.csv(tidy(mod.app), "mod.app.csv")
+  
+  # In summary, what this shows is that the only thing that seems to affect species turnover is the quarantine and it lowers it
+  
+  # 3.1.3 Create plots
+  p.turnover=ggplot(data=spe.change.tot, aes(x=year, y=total, group=city))+
+   geom_point(aes(col=city))+
+    stat_smooth(method="lm", alpha=0, aes(col=city))+
+    scale_y_continuous(name="Relative total species turnover", limits=c(0,1.25))+
+    facet_wrap(~city)+
+      theme_bw()+
+   theme(legend.position = "none")
+  p.turnover
+
+  p.appear=ggplot(data=spe.change.tot, aes(x=year, y=appearance, group=city))+
+    geom_point(aes(col=city))+
+    stat_smooth(method="lm", alpha=0, aes(col=city))+
+    scale_y_continuous(name="Relative species appearance within cities", limits=c(0,1.25))+
+    facet_wrap(~city)+
+    theme_bw()+
+    theme(legend.position = "none")
+  p.appear
+
+  ### Create a double plot
+  # Plot both variables
+  p.turnover.1=ggplot(data=spe.change.tot, aes(x=year, y=total))+
+    geom_jitter(aes(col=quarantine), size=2.5, width=0.15)+
+  #  stat_smooth(method="lm", alpha=0.5, col="black")+
+    scale_y_continuous(name="Relative total species turnover", limits=c(0,1.25))+
+    geom_text(aes(x=2020, y=0.92, label="***"), col="black", cex=6)+
+    theme_classic()
+  p.turnover.1
+
+  p.appear.1=ggplot(data=spe.change.tot, aes(x=year, y=appearance))+
+    geom_jitter(aes(col=quarantine), size=2.5, width=0.15)+
+#    stat_smooth(method="lm", alpha=0.5, col="black")+
+    scale_y_continuous(name="Relative species appearance", limits=c(0,1.25))+
+    geom_text(aes(x=2020, y=0.92, label="*"), col="black", cex=6)+
+    theme_classic()
+  p.appear.1
+
+library(ggpubr)
+  
+jpeg("Figures/MJ_SpTurnover.jpg", width = 350, height = 350)
+# make your plot
+ggarrange(p.turnover.1, p.appear.1, common.legend = TRUE, legend = "right")
+# close the plot to save it.
+dev.off()
+
+# Overall, it seems like species turnover was higher in the earlier day of use of the app, and has decreased since.
+# We do not see a massive change in reported species composition due to quarantine.
+# No clear trend emerge for the appearance of new species being reported between cities. It's very variable. 
+
+
+#########################################################################################################
+# 4. Generating figures related to hypothesis 4 - Ordinations
+#########################################################################################################
+
+###################################################
+# 4.1 Species composition with "abundance"
+###################################################
+# This table needs to have cities and years (2019 and 2020 only) as rows, species as columns and 0-1 in values
+# The rationale for not doing it by year is to simplify the plot at the end and deal with missing data (missing 6 city x year combos)
+
+  # 4.1.1 Prepare data
+  inat1=inat %>%
+    mutate(quarantine=ifelse(year == 2020, "yes", "no"))%>%
+    dplyr::select(Ggrphc_n, year, quarantine, scientific_name)%>%
+    #filter(year %in% c(2018,2019,2020))%>%
+    unite(col="city_year", Ggrphc_n, year, sep = "_", remove=FALSE)%>%
+     count(city_year, scientific_name)%>%	# This generates the number of reports of a species in a city per year
+    separate(city_year, into=c("Ggrphc_n", "year"), remove=FALSE)
+  inat1$n=as.numeric(inat1$n)
+  
+  # Comparing average 2016-2019 community with 2020
+  inat1.1=inat %>%
+    mutate(quarantine=ifelse(year == 2020, "yes", "no"))%>%
+    dplyr::select(Ggrphc_n, year, quarantine, scientific_name)%>%
+    unite(col="city_quarantine", Ggrphc_n, quarantine, sep = "_", remove=FALSE)%>%
+    dplyr::group_by(city_quarantine, scientific_name)%>%
+    dplyr::summarise(abundance = length((scientific_name)), nb_year = length(unique(year)))%>%
+    separate(city_quarantine, into=c("Ggrphc_n", "quarantine"), remove=FALSE)%>%
+    mutate(Divided=ifelse(quarantine == "no", abundance/nb_year, abundance))
+    
+# for city_quarantine - count unique years
+  
+  inat2=inat1.1%>%
+    pivot_wider(id_cols=city_quarantine, names_from=scientific_name, values_from=Divided)%>%
+    separate(city_quarantine, into=c("Ggrphc_n", "quarantine"), remove=FALSE)
+  
+  inat2=data.frame(inat2)
+  inat2[is.na(inat2)] = 0
+
+  # Convert to factors or integers
+  inat2$Ggrphc_n=as.factor(inat2$Ggrphc_n)
+  #inat2$year=as.integer(inat2$year)
+  inat2$quarantine=as.factor(inat2$quarantine)
+  inat2$city_quarantine=as.factor(inat2$city_quarantine)
+
+  # Add in longitude using cities_all from section 1.
+  cities_long=cities_all%>%
+    dplyr::select(Geographic.name, long, park.area.percentage, Population.density.per.square.kilometre..2016)
+  inat3.1=left_join(inat2, cities_long, by=c("Ggrphc_n"="Geographic.name"))
+  
+  inat3.1$long=as.numeric(inat3.1$long)
+  inat3.1$Population.density.per.square.kilometre..2016=as.numeric(inat3.1$Population.density.per.square.kilometre..2016)
+  inat3.1$park.area.percentage=as.numeric(inat3.1$park.area.percentage)
+  
+  # keep only species (with all years 389, wiht just 2019-2020 357)
+  inat4=inat2[,4:389]
+  
+  # 4.1.2 Create the distance matrix 
+  spe.bray=vegdist(inat4, method="bray") # create distance matrix - Bray-Curtis distance used for community data
+
+  # 4.1.3 Multivariate anova per permutation of the observed community to test for year effect (city as a random effect)
+  spe.adonis<- adonis(formula = spe.bray ~quarantine+long, 
+                    strata=inat3.1$Ggrphc_n,
+                    data = inat3.1, 
+                    perm = 5000) # no strata
+  spe.adonis # Significant year effect in sp composition when cities are used as random effect
+  # Effet of year: R2=0.04, p=0.0004 --- Year is only explaining about 4 percent of the variation
+  # Longitude : R2=0.07, p=0.004
+  # 4.1.4 Prepare data for plot with a NMDS ordination in ggplot
+  ###Run the NMDS with two dimensions.  ###
+  set.seed(5) # random number selected to get repeatable results
+
+  spe.nmds <- metaMDS(spe.bray, k = 2, trymax = 500) # the 3 dimensions is a better fit, but we will use 2 dimensions for the project
+  # Our interpretation is likely to focus on axes 1 and 2 though
+  spe.nmds$stress # stress of 0.10 - ok 
+  stressplot(spe.nmds)
+
+  #Plot the NMDS using ggplot2
+  spp.fit <- envfit(spe.nmds, inat4, permutations = 999) # this fits species vectors
+  env.fit <- envfit(spe.nmds, inat3.1[,c(390)], permutations = 999) # this fits species vectors
+  site.scrs <- as.data.frame(scores(spe.nmds, display = "sites")) #save NMDS results into dataframe
+  site.scrs <- cbind(site.scrs, inat3.1[,c(1:3,390:392)])  # add some env data
+
+  # This shows that there is a strong longtitudinal gradient associated with species composition (East down, West down)
+  plot(spe.nmds)
+  plot(env.fit, p.max=0.05)
+
+  #Prep species data
+  spp.scrs <- as.data.frame(scores(spp.fit, display = "vectors")) #save species intrinsic values into dataframe
+  spp.scrs <- cbind(spp.scrs, Species = rownames(spp.scrs)) #add species names to dataframe
+  spp.scrs <- cbind(spp.scrs, pval = spp.fit$vectors$pvals) #add pvalues to dataframe so you can select species which are significant
+  #spp.scrs<- cbind(spp.scrs, abrev = abbreviate(spp.scrs$Species, minlength = 6)) #abbreviate species names
+  spp.scrs$arrow.length=sqrt(spp.scrs$NMDS1^2+spp.scrs$NMDS2^2)
+  sig.spp.scrs <- subset(spp.scrs, pval<=0.001) #subset data to show species significant at 0.1
+  sig.spp.scrs2= spp.scrs%>% # Note that the 2019 indicator was not significant
+    filter(Species %in% c("Acanthis.flammea", "Anas.platyrhynchos", "Turdus.migratorius", "Branta.canadensis", "Haemorhous.mexicanus", 
+                          "Cyanocitta.cristata", "Ardea.herodias", "Falco.columbarius")) #subsetonly the indicator species
+
+  # 4.1.5 Basic plot with ggplot2. Colors represent cities
+  #Code obtained from https://www.rpubs.com/RGrieger/545184
+
+  # Generate standard deviation ellipses
+  NMDS = data.frame(MDS1 = spe.nmds$points[,1], MDS2 = spe.nmds$points[,2],group=as.factor(inat3.1$quarantine))
+  NMDS.mean=aggregate(NMDS[,1:2],list(group=NMDS$group),mean)
+  veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
+  {
+    theta <- (0:npoints) * 2 * pi/npoints
+    Circle <- cbind(cos(theta), sin(theta))
+    t(center + scale * t(Circle %*% chol(cov)))
+  }
+
+  df_ell <- data.frame()
+  for(g in levels(NMDS$group)){
+   df_ell <- rbind(df_ell, cbind(as.data.frame(with(NMDS[NMDS$group==g,],
+   veganCovEllipse(cov.wt(cbind(MDS1,MDS2),wt=rep(1/length(MDS1),length(MDS1)))$cov,center=c(mean(MDS1),mean(MDS2)))))
+   ,group=g))
+  }
+
+  # Plot the NMDS
+  nmds.plot <- ggplot(site.scrs, aes(x=NMDS1, y=NMDS2))+ #sets up the plot
+    geom_path(data = site.scrs, aes(x = NMDS1, y = NMDS2, group=Ggrphc_n), col="lightgrey")+
+        geom_path(data=df_ell, aes(x=MDS1, y=MDS2, fill=group), size=1, linetype=1, show.legend = F)+
+    geom_point(aes(NMDS1, NMDS2, colour = site.scrs$quarantine,fill=site.scrs$quarantine), size = 3)+ #adds site points to plot, colour determined by Depth
+   # annotate("text",x=NMDS.mean$MDS1,y=NMDS.mean$MDS2,label=NMDS.mean$group)+
+    theme_bw()+ 
+    labs(colour = "Quarantine")+ 
+    theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10))+ # add legend at right of plot
+    theme(panel.background = element_rect(fill = NA, colour = "black", size = 1, linetype = "solid"),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank())+ 
+    guides(fill=FALSE)
+  nmds.plot
+
+  #Adding the species correlated with site positionning in ordination space at p<0.0005
+  # Aaaahhhh so all species are more abundant in 2020 when showing p<0.05 there are too many - selected only the top 10
+  # Lenght of the arrows has been halves for ease of reading in a presentation
+  
+  jpeg("Figures/MJ_QualityGrade_ALL.jpg", width = 350, height = 350)
+  # make your plot
+  nmds.plot.spe=nmds.plot+
+    geom_segment(data = sig.spp.scrs2, aes(x = 0, xend=NMDS1/2, y=0, yend=NMDS2/2), arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd=0.3) + #add vector arrows of  species significant at alpha=0.05
+    ggrepel::geom_text_repel(data = sig.spp.scrs2, aes(x=NMDS1/2, y=NMDS2/2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+ #add labels for  species, use ggrepel::geom_text_repel so that labels do not overlap
+    scale_alpha(guide = 'none')
+  nmds.plot.spe
+  # close the plot to save it.
+  dev.off()
+  
+
+
+  
+  ###################################################################
+  # 5 Indicator species analysis
+  ###################################################################
+  library(labdsv)
+  
+  # 5.1 Import data
+  # Use inat2 from section 4. 
+ 
+  # 5.2 
+  # Export a table of indicator species calculated for all years. Only 2019 (4) and 2020 (5) had indicator species (taxa) based on 
+  # occurrence records. -> I can't find an easy way to export this table in a csv form. 
+  indicators=indval(inat4, inat2$quarantine)
+  
+  summary(indicators, p=0.05, type='short', digits=4, show=p,
+          sort=FALSE, too.many=100)
+###################################################################
+# 6 Compare the pre-quarantine species list and compare with quarantine species list
+###################################################################
+# 6.2 Start from inat_pres that was created in 4.2 
+inat_PA=inat %>%
+  dplyr::select(Ggrphc_n, year, scientific_name)%>%
+  mutate(quarantine=ifelse(year == 2020, "yes", "no"))%>%
+  unite(col="city_quarantine", Ggrphc_n, quarantine, sep = "_", remove=FALSE)%>%
+  count(city_quarantine, scientific_name)%>%	# This generates the number of reports of a species in a city per year
+  separate(city_quarantine, into=c("Ggrphc_n", "quarantine"), remove=FALSE)
+
+# Convert to factors or integers
+inat_PA$city_quarantine=as.factor(inat_PA$city_quarantine)
+inat_PA$Ggrphc_n=as.factor(inat_PA$Ggrphc_n)
+inat_PA$quarantine=as.factor(inat_PA$quarantine)
+inat_PA$scientific_name=as.factor(inat_PA$scientific_name)
+inat_PA$n=as.numeric(inat_PA$n)
+
+# Convert to presence absence in wide format
+inat_pres=splist2presabs(inat_PA, sites.col="city_quarantine", sp.col="scientific_name", keep.n=FALSE)
+
+inat_sp_list=inat_pres%>%
+  pivot_longer(cols=`Acanthis.flammea`:`Zonotrichia.querula`)%>%
+  separate(city_quarantine, into=c("City", "quarantine"), remove=TRUE)%>%
+  pivot_wider(names_from=quarantine, values_from=value)
+
+toto=inat_sp_list%>%
+  filter(no==0 & yes==1)%>%
+  pivot_wider(names_from=City, values_from=yes)%>%
+  dplyr::select(-no)
+toto$name=as.factor(toto$name)
+
+toto1=data.frame(toto)%>%
+  mutate_if(is.integer, as.numeric)%>%
+  replace(., is.na(.), "0")%>%
+  mutate_if(is_character, as.numeric)%>%
+  mutate(sum = rowSums(.[,2:21]))%>%
+  arrange(desc(sum))
+
+toto2=toto1%>%
+  dplyr::select(name, sum)%>%
+  arrange(desc(sum))
+
+write.csv(toto2, "NewSpecies_2020.csv")
+
+
+#########################################################################################################
+# 7. Generating figures related to observers? Sp richness per observer
+#########################################################################################################
+
+  ###################################################
+  # 7.1 Prepare data for plotting
+  ###################################################
+  # Start with the inat table
+  # Calculate the number of species observed by one observer in one city for all years
+
+  inat_rich_obs <- inat%>%
+    mutate(quarantine=ifelse(year == 2020, "yes", "no"))%>%
+    dplyr::group_by(Ggrphc_n, year, quarantine, user_login) %>%
+    dplyr::summarise(spc_richness = length(unique(scientific_name)))
+  
+  ###################################################
+  # 7.2 Basics stats
+  ###################################################
+  
+  #  Check general data distribution
+  hist(inat_rich_obs$spc_richness) # This is very un-normal -> Most observers record very few observations
+
+  #Mixed model with year as an explanatory variable and city as random
+  fit.rich.obs=lmer(log(spc_richness)~quarantine+(1|Ggrphc_n), data=inat_rich_obs)
+  summary(fit.rich.obs)
+  anova(fit.rich.obs)
+  plot(fit.rich.obs) # eesh
+  hist(residuals(fit.rich.obs)) #eesh -> we'll roll with this, but it's not great
+  
+  # Cities have a pretty big effect, but neither year or quarantine does. 
+
+  ###################################################
+  # 7.3 PLot
+  ###################################################
+  jpeg("Figures/MJ_Rich_Observer.jpg", width = 350, height = 350)
+  # make your plot
+  ggplot(inat_rich_obs, aes(x=as.factor(year), y=spc_richness))+
+    geom_jitter(aes(color=quarantine))+
+    #facet_wrap(~Ggrphc_n)+
+    theme_classic()+
+    labs(y= "Species richness per observer", x = "Year")
+  # close the plot to save it.
+  dev.off()
+
+
+#########################################################################################################
+# 8. Re-run Shuang's figure for quality grades
+#########################################################################################################
+
+#final data with unique id
+inat_identity<-distinct(inat, id, .keep_all= TRUE)
+#write.table(inat_identity,"Data/04_inat_identity.csv",sep=",")
+
+###figures for quality_grade
+inat_clean_observation <- inat_identity%>%
+  dplyr::group_by(Ggrphc_n, year,user_login) %>%
+  dplyr::summarise(spc_richness = length(unique(scientific_name)), nb_observations = length(user_login))
+quality_percent<-inat_clean_observation%>%
+  dplyr::group_by(year) %>% 
+  mutate(percent_nb_observations  = nb_observations /sum(nb_observations),
+         percent_spc_richness   = spc_richness /sum(spc_richness ))
+
+####quality composition percentage  for species richness in each city
+
+
+# create the path and name to your new figure
+# here the name is Test_image, type is .jpg
+# width and height can be changed, they're in nb of pixels
+jpeg("Figures/MJ_QualityGrade_ALL.jpg", width = 350, height = 350)
+# make your plot
+ggplot(quality_percent,aes(x=year,y=percent_spc_richness,fill=quality_grade)) +
+  geom_bar(width = 0.85, stat = "identity")+
+  theme_classic() + 
+  labs(x="Years", y="Percentage of  quality grades")
+# close the plot to save it.
+dev.off()
