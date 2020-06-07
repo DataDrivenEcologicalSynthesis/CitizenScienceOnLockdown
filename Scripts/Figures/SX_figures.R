@@ -48,6 +48,7 @@ inat <- read.table("Data/04_Inat_from_clipping_NoDuplicates-csv.tsv"
 inat_identity<-distinct(inat, id, .keep_all= TRUE)
 #write.table(inat_identity,"Data/04_inat_identity.csv",sep=",")
 
+#figures of number of species and richness over years
 ###figures for quality_grade
 inat_clean_observation <- inat_identity%>%
 	dplyr::group_by(Ggrphc_n, year,quality_grade) %>%
@@ -174,7 +175,8 @@ theme_classic()+
 	xlab("Number of observations of a species")+
 	ylab("percentage of each quality grade")+
 	theme(axis.text.x=element_text(angle=60, hjust=1)) 
-write.table(communty_time_percent,"Data/speciesabundanceyear.csv",sep=",")
+#write.table(communty_time_percent,"Data/speciesabundanceyear.csv",sep=",")
+write.csv(communty_time_percent, "Data/speciesabundanceyear.csv", row.names = FALSE)
 dev.off()
 #####the obseration of frequncy for each species over years
 jpeg("Figures/Hypothesis_1/SX_time_speciesfreqyear.jpg", width = 1000, height = 700)
@@ -196,3 +198,40 @@ rare<-rarenew%>%
 raremax <- min(rowSums(rare))
 S <- specnumber(rare) # observed number of species
 Srare <- rarefy(rare, raremax)
+##making more appendix figures
+inat <- read.csv("Data/inat_identity.csv")
+inat_clean <- inat %>%
+	dplyr::group_by(Ggrphc_n, year) %>%
+	dplyr::summarise(spc_richness = length(unique(scientific_name))
+					 , nb_observations = length(user_login)
+					 , nb_observators = length(unique(user_login)))
+# coding the quarantine
+inat_clean$quarantine <- ifelse(inat_clean$year == 2020, "yes", "no")
+inat_clean$quarantine <- factor(inat_clean$quarantine)
+rm(inat)
+jpeg("Figures/Hypothesis_1/SX_supp_observersandobservation.jpg", width = 1000, height = 700)
+ggplot(inat_clean,aes(x=nb_observators,y=nb_observations))+
+	geom_point(aes(color=as.factor(inat_clean$year),size=5))+
+		stat_smooth(method=lm)+
+	labs(color="year",x="Number of observators",y="Number of observations")+
+	theme_classic(base_size=20)
+
+dev.off()
+#figures of number of species and richness over years
+jpeg("Figures/Hypothesis_1/SX_supp_yearobservators.jpg", width = 1000, height = 700)
+ggplot(inat_clean,aes(x=year,y=nb_observators))+
+	geom_point(aes(color=quarantine),size=5)+
+	stat_smooth(method=lm)+
+	facet_wrap(~Ggrphc_n)+
+	labs(x="year",y="Number of observators")+
+	theme_classic(base_size=16)
+
+dev.off()
+jpeg("Figures/Hypothesis_1/SX_supp_yearrichness.jpg", width = 1000, height = 700)
+ggplot(inat_clean,aes(x=year,y=spc_richness))+
+	geom_point(aes(color=quarantine),size=5)+
+	facet_wrap(~Ggrphc_n)+
+	labs(x="year",y="species richness")+
+	theme_classic(base_size=16)
+
+dev.off()
